@@ -1,0 +1,33 @@
+build:
+	mkdir obj
+
+	nasm -f elf32 kasm.asm -o kasm.o
+
+	~/Documents/Cross/Install/bin/i686-elf-gcc -m32 -c kernel.c -o kc.o -ffreestanding
+	~/Documents/Cross/Install/bin/i686-elf-gcc -m32 -c include/system.c -o obj/system.o -ffreestanding
+	~/Documents/Cross/Install/bin/i686-elf-gcc -m32 -c include/isr.c -o obj/isr.o -ffreestanding
+	~/Documents/Cross/Install/bin/i686-elf-gcc -m32 -c include/idt.c -o obj/idt.o -ffreestanding
+	~/Documents/Cross/Install/bin/i686-elf-gcc -m32 -c include/util.c -o obj/util.o -ffreestanding
+	~/Documents/Cross/Install/bin/i686-elf-gcc -m32 -c include/string.c -o obj/string.o -ffreestanding
+	~/Documents/Cross/Install/bin/i686-elf-gcc -m32 -c include/screen.c -o obj/screen.o -ffreestanding
+	~/Documents/Cross/Install/bin/i686-elf-gcc -m32 -c include/keyboard.c -o obj/keyboard.o -ffreestanding
+
+	~/Documents/Cross/Install/bin/i686-elf-ld -m elf_i386 -T link.ld -o AMOS/boot/AMOS.bin kasm.o kc.o obj/isr.o obj/string.o obj/system.o obj/screen.o obj/keyboard.o obj/util.o obj/idt.o
+
+clear:
+	rm AMOS/boot/AMOS.bin
+	rm kc.o
+	rm kasm.o
+	rm obj/string.o
+	rm obj/system.o
+	rm obj/screen.o
+	rm obj/keyboard.o
+	rm obj/util.o
+	rm obj/idt.o
+	rm obj/isr.o
+	rmdir obj
+
+run:
+	make
+	qemu-system-x86_64 -kernel AMOS/boot/AMOS.bin
+	#grub-mkrescue -o AMOS.iso AMOS/
