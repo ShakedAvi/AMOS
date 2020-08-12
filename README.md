@@ -2,7 +2,8 @@
 
 ![Screenshot](OS.png)
 
-UNIX Based Operation System written in C
+UNIX Based Operation System written in C.
+
 The project's includes:
 * An FS
 * Multi Processing
