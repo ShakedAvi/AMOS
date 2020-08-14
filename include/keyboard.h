@@ -5,6 +5,6 @@
 #include "system.h"
 #include "types.h"
 
-string readStr();
+void readStr(string buffstr);
 
 #endif

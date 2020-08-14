@@ -1,9 +1,9 @@
 #include "keyboard.h"
 
-string readStr()
+void readStr(string buffstr)
 {
     char buff;
-    string buffstr;
+    //char buffstr[200];
     uint8 i = 0;
     uint8 reading = 1;
     while(reading)
@@ -304,6 +304,5 @@ string readStr()
             }
         }
     }
-    buffstr[i] = 0;
-    return buffstr;
+    buffstr[i - 1] = 0;
 }

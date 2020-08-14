@@ -1,5 +1,5 @@
 build:
-	mkdir obj
+	mkdir -p obj
 
 	nasm -f elf32 kasm.asm -o kasm.o
 

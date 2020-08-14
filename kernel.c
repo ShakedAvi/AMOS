@@ -17,10 +17,17 @@ int kmain()
 
   int exitFlag = 1;
 
+  char currCommand[200] = { 0 };
+
   while(exitFlag)
   {
     print("\n>> ");
-    readStr();
+    readStr(currCommand);
+    if (strEql(currCommand, "exit"))
+    {
+      print("\nGoodbye!\n");
+      exitFlag = 0;
+    }
   }
 
   return 0;

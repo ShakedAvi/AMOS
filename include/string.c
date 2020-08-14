@@ -27,3 +27,10 @@ uint16 strEql(string str1, string str2)
   }
   return result;
 }
+
+string strCpy(string strDest, string strSrc)
+{
+    char *temp = strDest;
+    while(*strDest++ = *strSrc++);
+    return temp;
+}
