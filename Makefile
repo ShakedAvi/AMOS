@@ -15,17 +15,10 @@ build:
 	~/Documents/Cross/Install/bin/i686-elf-ld -m elf_i386 -T link.ld -o AMOS/boot/AMOS.bin kasm.o kc.o obj/isr.o obj/string.o obj/system.o obj/screen.o obj/keyboard.o obj/util.o obj/idt.o
 
 clear:
-	rm AMOS/boot/AMOS.bin
-	rm kc.o
-	rm kasm.o
-	rm obj/string.o
-	rm obj/system.o
-	rm obj/screen.o
-	rm obj/keyboard.o
-	rm obj/util.o
-	rm obj/idt.o
-	rm obj/isr.o
-	rmdir obj
+	rm -f AMOS/boot/AMOS.bin
+	rm -f kc.o
+	rm -f kasm.o
+	rm -r -f obj
 
 run:
 	make
