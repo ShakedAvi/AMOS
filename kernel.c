@@ -3,6 +3,8 @@
 #include "include/screen.h"
 #include "include/keyboard.h"
 #include "include/isr.h"
+#include "include/timer.h"
+#include "include/paging.h"
 
 int kmain()
 {
@@ -25,8 +27,16 @@ int kmain()
     readStr(currCommand);
     if (strEql(currCommand, "exit"))
     {
+      __asm__ __volatile__("cli");
       print("\nGoodbye!\n");
       exitFlag = 0;
+      asm("hlt");
+    }
+    if (strEql(currCommand, "timer"))
+    {
+      print("\n");
+      __asm__ __volatile__("sti");
+      init_timer(50);
     }
   }
 
