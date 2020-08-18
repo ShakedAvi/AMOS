@@ -47,12 +47,12 @@ void register_interrupt_handler(uint8 n, interrupt_handler_t handler)
 
 void isr_install()
 {
-  memory_set((uint32*)&interrupt_handlers, 0, sizeof (interrupt_handler_t) * IDT_ENTRIES);
+  memory_set(&interrupt_handlers, 0, sizeof (interrupt_handler_t) * IDT_ENTRIES);
 
   idt_reg.limit = sizeof (idt_gate_t) * IDT_ENTRIES - 1;
   idt_reg.base  = (uint32) &idt;
 
-  memory_set((uint32*)&idt, 0, sizeof (idt_gate_t) * IDT_ENTRIES - 1);
+  memory_set(&idt, 0, sizeof (idt_gate_t) * IDT_ENTRIES - 1);
 
   outportb(0x20, 0x11);
   outportb(0xA0, 0x11);

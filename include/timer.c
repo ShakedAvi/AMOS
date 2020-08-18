@@ -14,7 +14,7 @@ static void timer_callback(registers_t regs)
 
 void init_timer(uint32 frequency)
 {
-   register_interrupt_handler(32, (uint32)timer_callback);
+   register_interrupt_handler(32, (interrupt_handler_t)&timer_callback);
 
    uint32 divisor = 1193180 / frequency;
 

@@ -9,7 +9,10 @@
 int kmain()
 {
   isr_install();
+
   clearScreen();
+
+  init_paging();
 
   print("     _    __  __  ___  ____  \n");
   print("    / \\  |  \\/  |/ _ \\/ ___| \n");
@@ -20,6 +23,10 @@ int kmain()
   int exitFlag = 1;
 
   char currCommand[200] = { 0 };
+
+  // Testing Page Fault:
+  //uint32 *ptr = (uint32*)0xA0000000;
+  //uint32 do_page_fault = *ptr;
 
   while(exitFlag)
   {

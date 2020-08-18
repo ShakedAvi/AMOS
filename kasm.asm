@@ -10,6 +10,8 @@ global _start
 extern kmain
 
 _start:
+  push esp
+
   cli
   call kmain
   hlt

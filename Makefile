@@ -2,7 +2,6 @@ build:
 	mkdir -p obj
 
 	nasm -f elf32 kasm.asm -o kasm.o
-	nasm -f elf32 include/paging.asm -o obj/pagingAsm.o
 	nasm -f elf32 include/isr.asm -o obj/isrAsm.o
 
 	~/Documents/Cross/Install/bin/i686-elf-gcc -m32 -c kernel.c -o kc.o -ffreestanding
@@ -16,8 +15,9 @@ build:
 	~/Documents/Cross/Install/bin/i686-elf-gcc -m32 -c include/paging.c -o obj/paging.o -ffreestanding
 	~/Documents/Cross/Install/bin/i686-elf-gcc -m32 -c include/timer.c -o obj/timer.o -ffreestanding
 	~/Documents/Cross/Install/bin/i686-elf-gcc -m32 -c include/kheap.c -o obj/kheap.o -ffreestanding
+	~/Documents/Cross/Install/bin/i686-elf-gcc -m32 -c include/orderedArray.c -o obj/orderedArray.o -ffreestanding
 
-	~/Documents/Cross/Install/bin/i686-elf-ld -m elf_i386 -T link.ld -o AMOS/boot/AMOS.bin kasm.o kc.o obj/isr.o obj/string.o obj/system.o obj/screen.o obj/keyboard.o obj/util.o obj/idt.o obj/paging.o obj/kheap.o obj/timer.o obj/pagingAsm.o obj/isrAsm.o
+	~/Documents/Cross/Install/bin/i686-elf-ld -m elf_i386 -T link.ld -o AMOS/boot/AMOS.bin kasm.o kc.o obj/isr.o obj/string.o obj/system.o obj/screen.o obj/keyboard.o obj/util.o obj/idt.o obj/paging.o obj/kheap.o obj/timer.o obj/isrAsm.o obj/orderedArray.o
 
 clear:
 	rm -f AMOS/boot/AMOS.bin

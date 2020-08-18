@@ -9,13 +9,18 @@ void memory_copy(char *source, char *dest, int nbytes)
     }
 }
 
-void memory_set(uint32 *dest, uint32 val, uint32 len)
+void memory_set(void *dest, uint32 val, uint32 len)
 {
-    uint32 *temp = (uint32 *)dest;
-    for ( ; len != 0; len--)
-    {
-      *temp++ = val;
-    }
+  uint8 value = (uint8)(val & 0xFF);
+  uint8 *dest2 = (uint8*)(dest);
+
+  int i = 0;
+
+  while(i < len)
+  {
+    dest2[i] = value;
+    i++;
+  }
 }
 
 void int_to_ascii(int n, char str[])
@@ -36,4 +41,5 @@ void int_to_ascii(int n, char str[])
       str[i++] = '-';
     }
     str[i] = '\0';
+    reverse(str, strLen(str));
 }
