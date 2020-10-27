@@ -43,6 +43,7 @@ string exception_messages[] =
 void register_interrupt_handler(uint8 n, interrupt_handler_t handler)
 {
     interrupt_handlers[n] = handler;
+    set_idt_gate(n, (uint32)handler);
 }
 
 void isr_install()

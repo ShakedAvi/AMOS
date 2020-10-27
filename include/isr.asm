@@ -12,7 +12,7 @@ global irq_common_stub
   irq%1:
     cli
     push byte 0
-    push byte %2
+    push %2
     jmp irq_common_stub
 %endmacro
 
