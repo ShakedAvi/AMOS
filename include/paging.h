@@ -4,6 +4,9 @@
 #include "types.h"
 #include "kheap.h"
 #include "isr.h"
+#include "timer.h"
+
+#define KHEAP_MAX_ADDRESS 0xFFFF000
 
 typedef struct page
 {
@@ -30,14 +33,49 @@ typedef struct page_directory
     uint32 physicalAddr;
 } page_directory_t;
 
-void init_paging();
 
+extern page_directory_t *current_directory;
+
+
+/**
+   Sets up the environment, page directories etc and
+   enables paging.
+**/
+void init_paging(uint32 memorySize);
+
+/**
+   Causes the specified page directory to be loaded into the
+   CR3 register.
+**/
 void switch_page_directory(page_directory_t *new);
 
-page_t *get_page(uint32 address, int make, page_directory_t *dir);
+/**
+   Retrieves a pointer to the page required.
+   If make == 1, if the page-table in which this page should
+   reside isn't created, create it!
+**/
+page_t *get_page(uint32 address, uint32 make, page_directory_t *dir);
+
+/**
+   Makes a copy of a page directory.
+**/
+page_directory_t *clone_directory(page_directory_t *src);
+
+
+/**
+    Pages memory at a given location
+**/
+void pageMem(uint32 location);
+
+/**
+    Maps virtual pages
+**/
+void virtual_map_pages(long addr, long size, uint32 rw, uint32 user);
 
 void alloc_frame(page_t *page, int is_kernel, int is_writeable);
+
 void free_frame(page_t *page);
 
+void page_fault(registers_t *regs);
 
-#endif
+#endif //PAGING_H
