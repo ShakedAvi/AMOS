@@ -69,7 +69,7 @@ void printch(char c)
   string vidmem = (string) 0xb8000;
   switch(c)
   {
-    case (0x08):
+    case ('\b'):
       if(cursorX > 0)
       {
 	       cursorX--;
