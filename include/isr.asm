@@ -1,9 +1,7 @@
-bits 32
+[BITS 32]
 
-section .text
-
-extern irq_handler
-global irq_common_stub
+[EXTERN irq_handler]
+[GLOBAL irq_common_stub]
 
 ; This macro creates a stub for an IRQ - the first parameter is
 ; the IRQ number, the second is the ISR number it is remapped to.
@@ -34,10 +32,10 @@ IRQ  14,    46
 IRQ  15,    47
 
 irq_common_stub:
-    pusha                    ; Pushes edi,esi,ebp,esp,ebx,edx,ecx,eax
+    pusha
 
-    mov ax, ds               ; Lower 16-bits of eax = ds.
-    push eax                 ; Save the data segment descriptor
+    mov ax, ds
+    push eax
 
     mov ax, 0x10             ; Load the kernel data segment descriptor
     mov ds, ax
@@ -46,9 +44,9 @@ irq_common_stub:
     mov gs, ax
     mov ss, ax
 
-    push esp    	     ; Push a pointer to the current top of stack - this becomes the registers_t* parameter.
-    call irq_handler         ; Call into our C code.
-    add esp, 4		     ; Remove the registers_t* parameter.
+    push esp
+    call irq_handler
+    add esp, 4
 
     pop ebx                  ; Reload the original data segment descriptor
     mov ds, bx
@@ -57,6 +55,6 @@ irq_common_stub:
     mov gs, bx
     mov ss, bx
 
-    popa                     ; Pops edi,esi,ebp...
-    add esp, 8               ; Cleans up the pushed error code and pushed ISR number
-    iret                     ; pops 5 things at once: CS, EIP, EFLAGS, SS, and ESP
+    popa
+    add esp, 8
+    iret

@@ -48,8 +48,6 @@ void register_interrupt_handler(uint8 n, interrupt_handler_t handler)
 
 void isr_install()
 {
-  memory_set(&interrupt_handlers, 0, sizeof (interrupt_handler_t) * IDT_ENTRIES);
-
   idt_reg.limit = sizeof (idt_gate_t) * IDT_ENTRIES - 1;
   idt_reg.base  = (uint32) &idt;
 
@@ -116,8 +114,11 @@ void isr_install()
   set_idt_gate (46, (uint32)irq14);
   set_idt_gate (47, (uint32)irq15);
 
+  set_idt_gate(128, (uint32)isr128);
+
   set_idt(); // Load with ASM
 
+  memory_set(&interrupt_handlers, 0, sizeof (interrupt_handler_t) * IDT_ENTRIES);
 }
 
 /*Handlers*/
@@ -279,6 +280,11 @@ void isr30()
 void isr31()
 {
     print(exception_messages[31]);
+    asm("hlt");
+}
+void isr128()
+{
+    print("isr 128!\n");
     asm("hlt");
 }
 
