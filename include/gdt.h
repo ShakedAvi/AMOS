@@ -3,6 +3,7 @@
 
 #include "types.h"
 #include "util.h"
+#include "paging.h"
 
 struct gdt_entry_struct
 {
@@ -25,10 +26,10 @@ typedef struct gdt_ptr_struct gdt_ptr_t;
 
 struct tss_entry_struct
 {
-   uint32 prev_tss;   // The previous TSS - if we used hardware task switching this would form a linked list.
-   uint32 esp0;       // The stack pointer to load when we change to kernel mode.
-   uint32 ss0;        // The stack segment to load when we change to kernel mode.
-   uint32 esp1;       // Unused...
+   uint32 prev_tss;
+   uint32 esp0;
+   uint32 ss0;
+   uint32 esp1;
    uint32 ss1;
    uint32 esp2;
    uint32 ss2;
@@ -43,13 +44,13 @@ struct tss_entry_struct
    uint32 ebp;
    uint32 esi;
    uint32 edi;
-   uint32 es;         // The value to load into ES when we change to kernel mode.
-   uint32 cs;         // The value to load into CS when we change to kernel mode.
-   uint32 ss;         // The value to load into SS when we change to kernel mode.
-   uint32 ds;         // The value to load into DS when we change to kernel mode.
-   uint32 fs;         // The value to load into FS when we change to kernel mode.
-   uint32 gs;         // The value to load into GS when we change to kernel mode.
-   uint32 ldt;        // Unused...
+   uint32 es;
+   uint32 cs;
+   uint32 ss;
+   uint32 ds;
+   uint32 fs;
+   uint32 gs;
+   uint32 ldt;
    uint16 trap;
    uint16 iomap_base;
 } __attribute__((packed));
@@ -58,5 +59,6 @@ typedef struct tss_entry_struct tss_entry_t;
 
 void init_gdt();
 static void gdt_set_gate(int32 num, uint32 base, uint32 limit, uint8 access, uint8 gran);
+void set_kernel_stack(uint32 stack);
 
 #endif

@@ -1,5 +1,7 @@
-global gdt_flush
-global tss_flush
+[BITS 32]
+
+[GLOBAL gdt_flush]
+[GLOBAL tss_flush]
 
 gdt_flush:
    mov eax, [esp+4]  ; Get the pointer to the GDT, passed as a parameter.
