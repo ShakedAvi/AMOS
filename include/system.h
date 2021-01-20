@@ -3,6 +3,7 @@
 
 #include "types.h"
 
+int myRand();
 uint8 inportb(uint16 port);
 void outportb(uint16 port, uint8 data);
 
