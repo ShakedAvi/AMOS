@@ -1,6 +1,8 @@
 #ifndef TYPES_H
 #define TYPES_H
 
+#define size_of(x) ((&x + 1) - &x)
+
 typedef signed char int8;
 typedef unsigned char uint8;
 
