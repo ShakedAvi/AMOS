@@ -1,6 +1,7 @@
 #include "task.h"
 
 static volatile int current_task_idx;
+static task_t* current_task;
 static task_t* tasks[4];
 
 static lock_t myLock;
@@ -37,6 +38,15 @@ void sleep()
   }
 }
 
+void init_tasking()
+{
+  asm volatile("cli");
+
+  init_lock(&myLock);
+
+	asm volatile("sti");
+}
+
 void timer_handler_main(unsigned int last_ebp, unsigned int last_esp)
 {
     outportb(0x20, 0x20); //write the EOI. This allows another interrupt to come in later
@@ -67,23 +77,6 @@ void timer_handler_main(unsigned int last_ebp, unsigned int last_esp)
     return;
 }
 
-void init_timer(uint32 frequency)
-{
-   register_interrupt_handler(32, (interrupt_handler_t)&timer_handler);
-
-   init_lock(&myLock);
-
-   uint32 divisor = 1193182 / frequency;
-
-   outportb(0x43, 0x34);
-
-   uint8 l = (uint8)(divisor & 0xFF);
-   uint8 h = (uint8)((divisor>>8) & 0xFF);
-
-   outportb(0x40, l);
-   outportb(0x40, h);
-}
-
 void create_task(int taskIdx, void *method, char *stack)
 {
 	task_t* task = (task_t*)kmalloc(sizeof(task_t));
@@ -101,4 +94,35 @@ void free_tasks()
   {
     kfree(tasks[i]);
   }
+}
+
+void switch_to_user_mode()
+{
+   set_kernel_stack(initial_esp + KERNEL_STACK_SIZE);
+   // Set up a stack structure for switching to user mode.
+
+   asm volatile("  \
+     mov $0x23, %ax; \
+     mov %ax, %ds; \
+     mov %ax, %es; \
+     mov %ax, %fs; \
+     mov %ax, %gs; \
+                   \
+     mov %esp, %eax; \
+     pushl $0x23; \
+     pushl %eax; \
+     pushf; \
+     pushl $0x1B; \
+     push $1f; \
+     iret; \
+   1: \
+     int $3 \
+     ");
+
+     //print("hello");
+     //syscall_print("Hi!\n");
+     //int a;
+     //char* p1 = "hello";
+     //asm volatile("int $0x80" : "=a" (a) : "0" (0), "b" ((int)p1));
+     while(1);
 }
