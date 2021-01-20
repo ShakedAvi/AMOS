@@ -1,4 +1,5 @@
 #include "include/types.h"
+#include "include/multiboot.h"
 #include "include/string.h"
 #include "include/screen.h"
 #include "include/keyboard.h"
@@ -7,6 +8,12 @@
 #include "include/paging.h"
 #include "include/task.h"
 #include "include/gdt.h"
+#include "include/vfs.h"
+#include "include/usermode.h"
+#include "include/chess.h"
+#include "include/syscall.h"
+
+uint32 initial_esp;
 
 static lock_t myLock;
 
@@ -60,16 +67,14 @@ void task_fourth()
 
 void print_menu()
 {
+  clearScreen();
+
   print("     _    __  __  ___  ____  \n");
   print("    / \\  |  \\/  |/ _ \\/ ___| \n");
   print("   / _ \\ | |\\/| | | | \\___ \\ \n");
   print("  / ___ \\| |  | | |_| |___) |\n");
   print(" /_/   \\_\\_|  |_|\\___/|____/ \n");
 
-  /*while(1)
-  {
-    __asm__("NOP");
-  }*/
 
   int exitFlag = 1;
 
@@ -99,27 +104,57 @@ void print_menu()
       __asm__ __volatile__("sti");
       init_timer(100);
 
-      create_task(0, (void*)task_first, (char*)4000);
+      create_task(0, (void*)print_menu, (char*)initial_esp);
+      //create_task(0, (void*)task_first, (char*)4000);
       create_task(1, (void*)task_second, (char*)6000);
       create_task(2, (void*)task_third, (char*)2000);
-      create_task(3, (void*)print_menu, (char*)8000); // *)task_fourth, (char*)8000);
+      create_task(3, (void*)task_fourth, (char*)8000);
+    }
+    else if(strEql(currCommand, "chess"))
+    {
+      start_game();
     }
     else if (strEql(currCommand, "clear"))
     {
       clearScreen();
     }
+    else if (strEql(currCommand, "syscall"))
+    {
+      __asm__ __volatile__("sti");
+      syscall_f1();
+    }
   }
 }
 
-int kmain()
+int kmain(struct multiboot *mboot_ptr, uint32 initial_stack)
 {
-  init_gdt();
+  initial_esp = initial_stack;
 
   isr_install();
+  print("IDT initialized\n\n");
+  init_gdt();
+  print("GDT initialized\n\n");
 
-  clearScreen();
+  uint32 memorySize = ((mboot_ptr->mem_lower + mboot_ptr->mem_upper) * 1024); //Bytes
 
-  init_paging();
+  init_paging(memorySize);
+  print("Paging initialized\n\n");
+
+  init_keyboard();
+  print("Keyboard initialized\n\n");
+
+  init_tasking();
+  print("Tasking initialized\n\n");
+
+  init_syscalls();
+  print("Syscalls initialized\n\n");
+
+  print("Calling Syscall:\n");
+  syscall_f1();
+  print("\n\n");
+
+  print("Switching to User Mode (and Raising Breakpoint Interrunpt):\n");
+  switch_to_user_mode();
 
   print_menu();
 
