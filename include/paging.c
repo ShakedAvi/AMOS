@@ -184,7 +184,7 @@ void page_fault(registers_t *regs)
 {
   char addr[10] = { 0 };
   asm volatile("sti");
-  //init_timer(1000); 
+  //init_timer(1000);
 
   uint32 faulting_address;
   asm volatile("mov %%cr2, %0" : "=r" (faulting_address));
@@ -201,10 +201,10 @@ void page_fault(registers_t *regs)
   if(us) {print("user-mode ");}
   if(reserved) {print("reserved ");}
   print(") at ");
-  int_to_ascii(faulting_address, addr);
+  itoa(faulting_address, addr, 16);
   print(addr);
   print(" - EIP: ");
-  int_to_ascii(regs->eip, addr);
+  itoa(regs->eip, addr, 16);
   print(addr);
   print("\n");
 
