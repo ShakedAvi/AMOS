@@ -26,6 +26,7 @@ typedef struct fops
     uint32     (*read)    (file *file, void *buf, uint32 size);
     uint32     (*write)   (file *file, void *buf, uint32 size);
     int         (*close)   (file *file);
+    uint32 (*ls) (void);
 }fops;
 
 typedef struct fs
@@ -57,7 +58,7 @@ typedef struct vfs_path
 typedef struct file
 {
     vnode *vnode;
-
+    char name[100];
     int flags;
 }file;
 
