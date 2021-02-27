@@ -66,15 +66,15 @@ code {
 <h2 style="text-align:center" id="Features">Features</h2>
 <p style="text-align:center">
     <ul type="circle">
-    <li>![State](https://img.shields.io/badge/State-WIP-yellow) Implementation of USTAR </li>
-    <li>![State](https://img.shields.io/badge/State-Done-brightgreen) Implementation of Process's File System </li>
-    <li>![State](https://img.shields.io/badge/State-Done-brightgreen) Stack Based Interpreter </li>
-    <li>![State](https://img.shields.io/badge/State-WIP-yellow) Simple Mouse Driver </li>
-    <li>![State](https://img.shields.io/badge/State-Done-brightgreen) Simple Speakers Driver </li>
-    <li>![State](https://img.shields.io/badge/State-To%20Be%20Updated-blue%20) Simple Multi Processing (including UserMode) </li>
-    <li>![State](https://img.shields.io/badge/State-Done-brightgreen) Simple Clock </li>
-    <li>![State](https://img.shields.io/badge/State-To%20Be%20Updated-blue%20) Simple Graphic Mode </li>
-    <li>![State](https://img.shields.io/badge/State-Done-brightgreen) Main Terminal Which Supports Various Functions</li>
+    <li>[![State](https://img.shields.io/badge/State-WIP-yellow]) Implementation of USTAR </li>
+    <li>[![State](https://img.shields.io/badge/State-Done-brightgreen]) Implementation of Process's File System </li>
+    <li>[![State](https://img.shields.io/badge/State-Done-brightgreen]) Stack Based Interpreter </li>
+    <li>[![State](https://img.shields.io/badge/State-WIP-yellow]) Simple Mouse Driver </li>
+    <li>[![State](https://img.shields.io/badge/State-Done-brightgreen]) Simple Speakers Driver </li>
+    <li>[![State](https://img.shields.io/badge/State-To%20Be%20Updated-blue%20]) Simple Multi Processing (including UserMode) </li>
+    <li>[![State](https://img.shields.io/badge/State-Done-brightgreen]) Simple Clock </li>
+    <li>[![State](https://img.shields.io/badge/State-To%20Be%20Updated-blue%20]) Simple Graphic Mode </li>
+    <li>[![State](https://img.shields.io/badge/State-Done-brightgreen]) Main Terminal Which Supports Various Functions</li>
     </ul>
 </p>
 
