@@ -4,7 +4,7 @@ extern void timer_handler();
 
 void init_timer(uint32 frequency)
 {
-   register_interrupt_handler(32, (interrupt_handler_t)&timer_handler);
+   register_interrupt_handler(TIMER_IRQ, (interrupt_handler_t)&timer_handler);
 
    uint32 divisor = 1193182 / frequency;
 
