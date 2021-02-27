@@ -6,6 +6,7 @@
 #include "string.h"
 #include "screen.h"
 #include "ahci.h"
+#include "paging.h"
 
 typedef union pci_dev
 {

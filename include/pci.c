@@ -115,7 +115,7 @@ pci_dev_t pci_scan_function(uint32 bus, uint32 device, uint32 function)
 	uint32 vendor_id = pci_read(dev, PCI_VENDOR_ID);
 	uint8 class_id = pci_read(dev, PCI_CLASS);
 	uint8 subclass_id = get_device_type(dev);
-	if (vendor_id != PCI_NONE)
+	/*if (vendor_id != PCI_NONE)
 	{
 		print(" Subclass ID:");
 		char str3[8] = {0};
@@ -128,7 +128,7 @@ pci_dev_t pci_scan_function(uint32 bus, uint32 device, uint32 function)
 		print(" ");
 		print(str4);
 		print("\n");
-	}
+	}*/
 	if(class_id == 0x01 && subclass_id == 0x06 && pci_read(dev, PCI_PROG_IF) == 0x01)
 	{
 		print("AHCI FOUND! \n");
@@ -197,7 +197,7 @@ pci_dev_t pci_scan_bus(uint32 bus)
 	Input:
 		None
 	Output:
-		HBA_MEM* abar: a struct containing the data from the ABAR 
+		HBA_MEM* abar: a struct containing the data from the ABAR
 */
 HBA_MEM* get_abar()
 {
@@ -208,7 +208,10 @@ HBA_MEM* get_abar()
 	{
 		print("Epic");
 	}*/
-	HBA_MEM* abar = (HBA_MEM*)HBA_MEM_BASE_ADDRESS;
+	uint32 base_addr = HBA_MEM_BASE_ADDRESS;
+	//HBA_MEM* abar = (HBA_MEM*)(base_addr + (1024*768*4));
+	virtual_map_pages(base_addr - 0x1000, 0x10000000, 1, 1);
+	HBA_MEM* abar = (HBA_MEM*)base_addr;
 	return abar;
 }
 
