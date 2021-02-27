@@ -83,8 +83,7 @@ code {
 </p>
 
 <h2 style="text-align:center" id="License">License</h2>
-<p style="text-align:center">
-        Licensed under the [GNU General Public License v3.0](LICENSE)
-</p>
+
+[GNU General Public License v3.0](LICENSE)
 
 </body>
