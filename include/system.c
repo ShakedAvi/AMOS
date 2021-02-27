@@ -43,3 +43,20 @@ void outportl(uint16 port, uint32 data)
 {
   __asm__ __volatile__ ("outl %1, %0" : : "dN" (port), "a" (data));
 }
+
+uint8 read_register(uint8 reg)
+{
+    outportb(0x70, reg);
+    return inportb(0x71);
+}
+
+void write_register(uint8 reg, uint8 value)
+{
+    outportb(0x70, reg);
+    outportb(0x71, value);
+}
+
+uint8 bcd2bin(uint8 bcd)
+{
+    return ((bcd >> 4) * 10) + (bcd & 0x0F);
+}
