@@ -51,7 +51,14 @@ uint8 disk_access(HBA_PORT *port, uint32 startl, uint32 starth, uint32 count, ui
 
 	cmdfis->fis_type = FIS_TYPE_REG_H2D;
 	cmdfis->c = 1;	// Command
-	cmdfis->command = ATA_CMD_READ_DMA_EX;
+	if (type == 0)
+	{
+		cmdfis->command = ATA_CMD_READ_DMA_EX;
+	}
+	else
+	{
+		cmdfis->command = ATA_CMD_WRITE_DMA_EX;
+	}
 
 	cmdfis->lba0 = (uint8)startl;
 	cmdfis->lba1 = (uint8)(startl>>8);
