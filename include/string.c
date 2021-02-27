@@ -28,11 +28,64 @@ uint16 strEql(string str1, string str2)
   return result;
 }
 
-string strCpy(string strDest, string strSrc)
+void strCpy(string strDest, string strSrc)
 {
-    char *temp = strDest;
-    while(*strDest++ = *strSrc++);
-    return temp;
+  int i = 0;
+  do
+  {
+    strDest[i] = strSrc[i];
+  }
+  while(strSrc[++i] != 0);
+}
+
+string strTok(string str, string comp)
+{
+	static int pos;
+	static char *s;
+	int i =0, start = pos;
+
+	if(str != 0)
+		s = str;
+
+	i = 0;
+	int j = 0;
+	while(s[pos] != '\0')
+	{
+		j = 0;
+		while(comp[j] != '\0')
+		{
+			if(s[pos] == comp[j])
+			{
+				s[pos] = '\0';
+				pos = pos+1;
+				if(s[start] != '\0')
+					return (&s[start]);
+				else
+				{
+					start = pos;
+					pos--;
+					break;
+				}
+			}
+			j++;
+		}
+		pos++;
+	}
+	s[pos] = '\0';
+	if(s[start] == '\0')
+		return 0;
+	else
+		return &s[start];
+}
+
+int ascii_to_int(string str)
+{
+    int res = 0;
+
+    for (int i = 0; str[i] != '\0'; ++i)
+        res = res * 10 + str[i] - '0';
+
+    return res;
 }
 
 void reverse(char str[], int length)
