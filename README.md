@@ -79,6 +79,7 @@ code {
 <p style="text-align:center">
     <ul type="circle">
     <li>Add USB Support </li>
+    </ul>
 </p>
 
 <h2 style="text-align:center" id="License">License</h2>
