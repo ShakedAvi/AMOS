@@ -333,11 +333,11 @@ void readStr(string buffstr)
 
 void keyboardInput_handler()
 {
-    //print("Key Pressed!\n");
+    print("Key Pressed!\n");
     //readChar();
 }
 
 void init_keyboard()
 {
-    register_interrupt_handler(33, &keyboardInput_handler);
+    register_interrupt_handler(KEYBOARD_IRQ, &keyboardInput_handler);
 }
