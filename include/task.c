@@ -32,10 +32,7 @@ void release(lock_t*lock)
 
 void sleep()
 {
-  for (int i = 0; i < 1000000; i++)
-  {
-    __asm__("NOP");
-  }
+  for (uint32 i = 0; i < 10000000; i++){}
 }
 
 void init_tasking()
