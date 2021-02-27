@@ -47,7 +47,7 @@ int procfs_open(file *file)
 
 uint32 procfs_read(file *file, void *buf, uint32 size)
 {
-	buf = currentprocs[(int)(file->vnode->p)]->name;
+	strCpy(buf, currentprocs[(int)(file->vnode->p)]->name);
 	return 0;
 }
 
