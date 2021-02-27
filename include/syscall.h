@@ -4,6 +4,7 @@
 #include "task.h"
 #include "screen.h"
 #include "util.h"
+#include "sound.h"
 
 #define DECL_SYSCALL0(fn) int syscall_##fn();
 #define DECL_SYSCALL1(fn,p1) int syscall_##fn(p1);

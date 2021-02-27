@@ -2,7 +2,8 @@
 
 void f1()
 {
-  print("Syscalling!!!");
+  print("Welcome to User Mode Agent!\n");
+  play_mission_impossible();
 }
 
 //DEFN_SYSCALL1(print, 0, char*)
@@ -32,7 +33,7 @@ void init_syscalls()
 void syscall_handler(registers_t *regs)
 {
    //if (regs->eax >= num_syscalls)
-  //    return;
+    //  return;
 
    void *location = syscalls[0];
 
