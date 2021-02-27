@@ -18,5 +18,6 @@ jump_usermode:
 
    iretd
 a:
-   ;jmp test_user_function
+   ;mov eax, 0
+   int 0x80
    jmp $
