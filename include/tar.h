@@ -5,7 +5,7 @@
 #include "disk.h"
 #include "vfs.h"
 
-static HBA_PORT* diskPort;
+HBA_PORT* diskPort;
 
 #define READ 0
 #define WRITE 1
@@ -42,7 +42,7 @@ struct tar_t
 };
 struct tar_t * archive;
 
-static int tar_init();
+int tar_init();
 int32 tar_open(file* file);
 int32 tar_close(file* file);
 int32 tar_read(file* file, char* buffer, uint32 size);

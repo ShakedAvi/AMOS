@@ -1,29 +1,25 @@
 #include "tar.h"
 
-static HBA_PORT* diskPort;
-static uint32 currFile;
-struct tar_t * archive;
+uint32 currFile;
+struct tar_t* archive;
 
-fs ustar;
+fs ustar = {
+    .name  = "ustar",
+    .init  = tar_init,
+
+    .fops =
+        {
+        .open    = tar_open,
+        .read    = tar_read,
+        .write   = tar_write,
+        .close   = tar_close,
+        .ls = tar_ls,
+    },
+};
 vnode *ustar_root;
 
-static int tar_init()
+int tar_init()
 {
-  fs ustar =
-  {
-      .name  = "ustar",
-      .init  = tar_init,
-
-      .fops =
-          {
-          .open    = tar_open,
-          .read    = tar_read,
-          .write   = tar_write,
-          .close   = tar_close,
-          .ls = tar_ls,
-      },
-  };
-
   currFile = 0;
   ustar_root = (vnode*)kmalloc(sizeof(struct vnode));
   ustar_root->fs = &ustar;
@@ -31,33 +27,60 @@ static int tar_init()
 
   archive = 0;
 
-  char ptr[512] = {0};
-  uint64 v = 1024 * currFile + 1;
-  uint32 low = (uint32)((v & 0xFFFFFFFF00000000LL) >> 32);
-  uint32 high = (uint32)(v & 0xFFFFFFFFLL);
+  char ptr[512] = { 0 };
+  uint64 v = 1024 * currFile;
+  uint32 high = (uint32)((v & 0xFFFFFFFF00000000LL) >> 32);
+  uint32 low = (uint32)(v & 0xFFFFFFFFLL);
+
+  /*char printMe[10] = { 0 };
+  itoa(low, printMe, 16);
+  print("Low: ");
+  print(printMe);
+  print("\n");
+
+  itoa(high, printMe, 16);
+  print("High: ");
+  print(printMe);
+  print("\n");*/
+
+  char fileNumber[10];
+
   disk_access(diskPort, low, high, 1, ptr, READ);
 
   while(!memory_compare(ptr + 257, "ustar", 5))
   {
-      memory_copy(ptr, ustar.files[currFile], 100);
+      ustar.files[currFile] = (file*)kmalloc(sizeof(file));
+      memory_copy(ptr, ustar.files[currFile]->name, 100);
+      ustar.files[currFile]->vnode = (vnode*)kmalloc(sizeof(vnode));
+      ustar.files[currFile]->vnode->ref = currFile;
+
       currFile++;
       //ptr += (((filesize + 511) / 512) + 1) * 512;
-      v = 1024 * currFile + 1;
-      low = (uint32)((v & 0xFFFFFFFF00000000LL) >> 32);
-      high = (uint32)(v & 0xFFFFFFFFLL);
+
+      for (int k = 0; k < 512; k++)
+      {
+        ptr[k] = 0;
+      }
+      v = 1024 * currFile;
+      high = (uint32)((v & 0xFFFFFFFF00000000LL) >> 32);
+      low = (uint32)(v & 0xFFFFFFFFLL);
       disk_access(diskPort, low, high, 1, ptr, READ);
   }
+
   return 0;
 }
 
 int32 tar_open(file* file)
 {
+  char fileNumber[10] = { 0 };
+
   //Searching for file
-  for (int i = 0; i <= currFile; i++)
+  for (int i = 0; i < currFile; i++)
   {
     if(strEql(ustar.files[i]->name, file->name))
     {
-      file = ustar.files[i];
+      strCpy(file->name, ustar.files[i]->name);
+      file->vnode->ref = ustar.files[i]->vnode->ref;
       return 0;
     }
   }
@@ -65,16 +88,24 @@ int32 tar_open(file* file)
   //Creating new file and saving it to disk
   struct tar_t fileHeader = {0};
   strCpy(fileHeader.name, file->name);
+  strCpy(fileHeader.ustar, "ustar\000");
   memory_set(fileHeader.block, 0, 512);
-  uint64 v = 1024 * currFile + 1;
-  uint32 low = (uint32)((v & 0xFFFFFFFF00000000LL) >> 32);
-  uint32 high = (uint32)(v & 0xFFFFFFFFLL);
-  disk_access(diskPort, low, high, 2, (char*)&fileHeader, WRITE);
+  uint64 v = 1024 * currFile;
+  uint32 high = (uint32)((v & 0xFFFFFFFF00000000LL) >> 32);
+  uint32 low = (uint32)(v & 0xFFFFFFFFLL);
+  char* str = (char*)&fileHeader;
+  /*print("\n");
+  for (uint32 i = 0; i < 1024; i++) {
+    printch(str[i]);
+  }
+  print("\n");*/
+  disk_access(diskPort, low, high, 2, str, WRITE);
 
-  struct file* newFile = (struct file*)kmalloc(sizeof(struct file*));
+  struct file* newFile = (struct file*)kmalloc(sizeof(struct file));
   newFile->vnode = (vnode*)kmalloc(sizeof(vnode));
   newFile->vnode->fs = &ustar;
   newFile->vnode->ref = currFile;
+
   strCpy(newFile->name, file->name);
   ustar.files[currFile] = newFile;
   currFile++;
@@ -91,90 +122,36 @@ int32 tar_close(file* file)
 int32 tar_read(file* file, char* buffer, uint32 size)
 {
   // Splitting the file address into high and low dwords
-  uint64 v = 1024 * file->vnode->ref + 1 + 512;
-  uint32 low = (uint32)((v & 0xFFFFFFFF00000000LL) >> 32);
-  uint32 high = (uint32)(v & 0xFFFFFFFFLL);
+  uint64 v = (1024 * file->vnode->ref + 512) / 512; //file->vnode->ref + 512;
+  uint32 high = (uint32)((v & 0xFFFFFFFF00000000LL) >> 32);
+  uint32 low = (uint32)(v & 0xFFFFFFFFLL);
+
   disk_access(diskPort, low, high, size, buffer, READ);
   return 0;
 }
 
 int32 tar_write(file* file, char* buffer, uint32 size)
 {
-  uint64 v = 1024 * file->vnode->ref + 1 + 512;
-  uint32 low = (uint32)((v & 0xFFFFFFFF00000000LL) >> 32);
-  uint32 high = (uint32)(v & 0xFFFFFFFFLL);
+  char fileNumber[10] = { 0 };
+
+  uint64 v = (1024 * file->vnode->ref + 512) / 512; //file->vnode->ref + 512;
+  uint32 high = (uint32)((v & 0xFFFFFFFF00000000LL) >> 32);
+  uint32 low = (uint32)(v & 0xFFFFFFFFLL);
+
   disk_access(diskPort, low, high, size, buffer, WRITE);
   return 0;
 }
 
 void tar_ls()
 {
+  print("\n");
   char fileNumber[10];
-  for (int i = 0; i <= currFile; i++)
+  for (int i = 0; i < currFile; i++)
   {
-    itoa(ustar.files[i]->ref, fileNumber, 10);
+    itoa(ustar.files[i]->vnode->ref + 1, fileNumber, 10);
     print(fileNumber);
     print(": ");
     print(ustar.files[i]->name);
     print("\n");
   }
 }
-
-/*
-int tar_lookup(unsigned char *archive, char *filename, char **out)
-{
-    unsigned char *ptr = archive;
-
-    while (!memory_compare(ptr + 257, "ustar", 5))
-    {
-        int filesize = oct2bin(ptr + 0x7c, 11);
-        if (!memory_compare(ptr, filename, strlen(filename) + 1)) {
-            *out = ptr + 512;
-            return filesize;
-        }
-        ptr += (((filesize + 511) / 512) + 1) * 512;
-    }
-    return 0;
-}
-
-/*
-int32 tar_read(const int32 file_descriptor, struct tar_t **archive, const char verbosity)
-{
-  if (file_descriptor < 0)
-  {
-    print("Error: Invalid File Descriptor");
-  }
-
-  if(!archive || *archive)
-  {
-    print("Error: Invalid Archive");
-  }
-
-
-
-}
-
-int32 tar_write(const int32 file_descriptor, struct tar_t ** archive, const uint32 filecount, const char *files, const char verbosity)
-{
-  if (file_descriptor < 0)
-  {
-    print("Error: Invalid File Descriptor");
-  }
-
-  if(!archive || *archive)
-  {
-    print("Error: Invalid Archive");
-  }
-
-
-}
-
-int32 read_size(const int32 file_descriptor, char* buffer, int32 size)
-{
-  return 0;
-}
-
-int32 write_size(const int32 file_descriptor, char* buffer, int32 size)
-{
-  return 0;
-}*/
