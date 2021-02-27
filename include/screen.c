@@ -35,7 +35,7 @@ void scrollUp(uint8 lineNumber)
   string vidmem = (string)0xb8000;
   uint16 i = 0;
 
-  clearLine(0,lineNumber-1);                                            //updated
+  clearLine(0,lineNumber-1);
 
   for (i;i<sw*(sh-1)*2;i++)
   {
