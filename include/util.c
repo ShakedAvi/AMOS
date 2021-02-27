@@ -14,13 +14,13 @@ int memory_compare(char* str1, char* str2, uint32 len)
   return 0;
 }
 
-void memory_copy(char *source, char *dest, int nbytes)
+void memory_copy(char *src, char *dest, int n)
 {
-    int i = 0;
-    for (i; i < nbytes; i++)
-    {
-        *(dest + i) = *(source + i);
-    }
+  char *csrc = (char *)src;
+  char *cdest = (char *)dest;
+
+  for (int i = 0; i < n; i++)
+    cdest[i] = csrc[i];
 }
 
 void memory_set(void *dest, uint32 val, uint32 len)
