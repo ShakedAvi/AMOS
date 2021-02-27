@@ -90,7 +90,9 @@ void alloc_frame(page_t *page, int is_kernel, int is_writeable)
   if(page->frame)
   {
     return;
-  }else{
+  }
+  else
+  {
     uint32 idx = first_frame();
     if (idx == (uint32)-1)
     {
@@ -227,7 +229,7 @@ void switch_page_directory(page_directory_t *dir)
   asm volatile("mov %0, %%cr0":: "r"(cr0));
 }
 
-page_t *get_page(uint32 address, uint32 make, page_directory_t *dir)
+page_t* get_page(uint32 address, uint32 make, page_directory_t *dir)
 {
   address /= 0x1000;
   uint32 table_idx = address / 1024;
