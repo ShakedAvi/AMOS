@@ -1,6 +1,6 @@
 # AMOS
 
-<!--->
+<!--
 <html>
 <head>
 <style>
@@ -14,7 +14,7 @@ code {
 </style>
 </head>
 <body>
-<--->
+-->
 
 <p style="text-align:center">
     <img src="OS.png" width="1000" alt"howto">
