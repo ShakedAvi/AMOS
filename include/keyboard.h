@@ -6,10 +6,24 @@
 #include "types.h"
 #include "isr.h"
 
-#define KEYBOARD_IRQ 33
+/*
+  The function reads a character from the keyboard.
 
+  Input:
+    None.
+  Output:
+    The read character.
+*/
 char readChar();
-void readStr(string buffstr);
-void init_keyboard();
+
+/*
+  The function reads a character from the keyboard.
+
+  Input:
+    None.
+  Output:
+    The read character.
+*/
+void readStr(char* buffstr);
 
 #endif

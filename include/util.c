@@ -1,9 +1,17 @@
 #include "util.h"
 
-int memory_compare(char* str1, char* str2, uint32 len)
+/*
+  The function compares between two memory strings.
+
+  Input:
+    The strings to compare and their length.
+  Output:
+    If the strings are equal (0 if they are).
+*/
+int memory_compare(int8* str1, int8* str2, uint32 len)
 {
-  const unsigned char *s1 = (const unsigned char*)str1;
-  const unsigned char *s2 = (const unsigned char*)str2;
+  const uint8* s1 = (const uint8*)str1;
+  const uint8* s2 = (const uint8*)str2;
   while (len-- > 0)
   {
     if (*s1++ != *s2++)
@@ -14,19 +22,37 @@ int memory_compare(char* str1, char* str2, uint32 len)
   return 0;
 }
 
-void memory_copy(char *src, char *dest, int n)
+/*
+  The function copies a memory string to another one.
+
+  Input:
+    The source and dest strings and the length to copy.
+  Output:
+    None.
+*/
+void memory_copy(int8* src, int8* dest, int n)
 {
-  char *csrc = (char *)src;
-  char *cdest = (char *)dest;
+  int8* csrc = (int8*)src;
+  int8* cdest = (int8*)dest;
 
   for (int i = 0; i < n; i++)
+  {
     cdest[i] = csrc[i];
+  }
 }
 
-void memory_set(void *dest, uint32 val, uint32 len)
+/*
+  The function sets any byte in a memory string with the same value.
+
+  Input:
+    The string, the value to set the string with and the length to set.
+  Output:
+    None.
+*/
+void memory_set(void* dest, uint32 val, uint32 len)
 {
   uint8 value = (uint8)(val & 0xFF);
-  uint8 *dest2 = (uint8*)(dest);
+  uint8* dest2 = (uint8*)(dest);
 
   int i = 0;
 
@@ -37,32 +63,20 @@ void memory_set(void *dest, uint32 val, uint32 len)
   }
 }
 
-void int_to_ascii(int n, char str[])
+/*
+  The function turns an integer into a string.
+
+  Input:
+    The integer to convert, the buffer to convert the integer into
+    and the conversion base (decimal, hex etc).
+  Output:
+    The converted string.
+*/
+int8* itoa(int value, int8* str, int base)
 {
-    int i = 0, sign = 0;
-    if ((sign = n) < 0)
-    {
-      n = -n;
-    }
-
-    do
-    {
-      str[i++] = n % 10 + '0';
-    } while ((n /= 10) > 0);
-
-    if (sign < 0)
-    {
-      str[i++] = '-';
-    }
-    str[i] = '\0';
-    reverse(str, strLen(str));
-}
-
-char *itoa(int value, char *str, int base)
-{
-    char *rc;
-    char *ptr;
-    char *low;
+    int8* rc;
+    int8* ptr;
+    int8* low;
     // Check for supported base.
     if (base < 2 || base > 36)
     {
@@ -89,21 +103,9 @@ char *itoa(int value, char *str, int base)
     // Invert the numbers.
     while (low < ptr)
     {
-        char tmp = *low;
+        int8 tmp = *low;
         *low++ = *ptr;
         *ptr-- = tmp;
     }
     return rc;
-}
-
-int otob(unsigned char *str, int size)
-{
-    int n = 0;
-    unsigned char *c = str;
-    while (size-- > 0) {
-        n *= 8;
-        n += *c - '0';
-        c++;
-    }
-    return n;
 }

@@ -1,23 +1,20 @@
 global jump_usermode
-extern test_user_function
-extern syscall_print
 
 jump_usermode:
-   mov ax, 0x23
+   mov ax, 0x23              ; ring 3 data
    mov ds, ax
    mov es, ax
    mov fs, ax
-   mov gs, ax
+   mov gs, ax                ; SS is handled by iret
 
-   push 0x23
-   push esp
-   pushfd
-   push 0x1B
-   lea eax, [a]
+   push 0x23                 ; data selector
+   push esp                  ; pushing current esp
+   pushfd                    ; eflags
+   push 0x1B                 ; code selector
+   lea eax, [test_user_mode] ; instruction address to return to
    push eax
 
    iretd
-a:
-   ;mov eax, 0
-   int 0x80
+test_user_mode:
+   int 0x80     ; testing a syscall
    jmp $

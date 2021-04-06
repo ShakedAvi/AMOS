@@ -57,8 +57,34 @@ struct tss_entry_struct
 
 typedef struct tss_entry_struct tss_entry_t;
 
+/*
+  The function initializes the GDT.
+
+  Input:
+    None.
+  Output:
+    None.
+*/
 void init_gdt();
+
+/*
+  The function sets a GDT gate.
+
+  Input:
+    The number of the gate and it's data.
+  Output:
+    None.
+*/
 static void gdt_set_gate(int32 num, uint32 base, uint32 limit, uint8 access, uint8 gran);
+
+/*
+  The function writes the TSS.
+
+  Input:
+    The number of the TSS gate in the GDT and it's data.
+  Output:
+    None.
+*/
 void set_kernel_stack(uint32 stack);
 
 #endif

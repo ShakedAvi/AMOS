@@ -1,45 +1,55 @@
+CC = ~/Documents/Cross/Install/bin/i686-elf-gcc
+CFLAGS = -ffreestanding -m32 -c
+
+ASM = nasm
+ASM_FLAGS = -f elf32
+
+LD = ~/Documents/Cross/Install/bin/i686-elf-ld
+LD_FLAGS = -m elf_i386 -T link.ld -o
+
+QEMU = qemu-system-x86_64
+QEMU_FLAGS = -soundhw pcspk -machine q35 -drive file=disk.img -cdrom
+
 build:
 	mkdir -p obj
 
-	nasm -f elf32 kasm.asm -o kasm.o
-	nasm -f elf32 include/isr.asm -o obj/isrAsm.o
-	nasm -f elf32 include/gdt.asm -o obj/gdtAsm.o
-	nasm -f elf32 include/switch.asm -o obj/switch.o
-	nasm -f elf32 include/usermode.asm -o obj/usermodeAsm.o
-	nasm -f elf32 include/paging.asm -o obj/pagingAsm.o
-	nasm -f elf32 include/graphic.asm -o obj/graphicAsm.o
+	$(ASM) $(ASM_FLAGS) kasm.asm -o kasm.o
+	$(ASM) $(ASM_FLAGS) include/isr.asm -o obj/isrAsm.o
+	$(ASM) $(ASM_FLAGS) include/gdt.asm -o obj/gdtAsm.o
+	$(ASM) $(ASM_FLAGS) include/switch.asm -o obj/switch.o
+	$(ASM) $(ASM_FLAGS) include/usermode.asm -o obj/usermode.o
+	$(ASM) $(ASM_FLAGS) include/paging.asm -o obj/pagingAsm.o
+	$(ASM) $(ASM_FLAGS) include/graphic.asm -o obj/graphicAsm.o
 
-	~/Documents/Cross/Install/bin/i686-elf-gcc -m32 -c kernel.c -o kc.o -ffreestanding
-	~/Documents/Cross/Install/bin/i686-elf-gcc -m32 -c include/system.c -o obj/system.o -ffreestanding
-	~/Documents/Cross/Install/bin/i686-elf-gcc -m32 -c include/isr.c -o obj/isr.o -ffreestanding
-	~/Documents/Cross/Install/bin/i686-elf-gcc -m32 -c include/idt.c -o obj/idt.o -ffreestanding
-	~/Documents/Cross/Install/bin/i686-elf-gcc -m32 -c include/util.c -o obj/util.o -ffreestanding
-	~/Documents/Cross/Install/bin/i686-elf-gcc -m32 -c include/string.c -o obj/string.o -ffreestanding
-	~/Documents/Cross/Install/bin/i686-elf-gcc -m32 -c include/screen.c -o obj/screen.o -ffreestanding
-	~/Documents/Cross/Install/bin/i686-elf-gcc -m32 -c include/keyboard.c -o obj/keyboard.o -ffreestanding
-	~/Documents/Cross/Install/bin/i686-elf-gcc -m32 -c include/paging.c -o obj/paging.o -ffreestanding
-	~/Documents/Cross/Install/bin/i686-elf-gcc -m32 -c include/timer.c -o obj/timer.o -ffreestanding
-	~/Documents/Cross/Install/bin/i686-elf-gcc -m32 -c include/kheap.c -o obj/kheap.o -ffreestanding
-	~/Documents/Cross/Install/bin/i686-elf-gcc -m32 -c include/orderedArray.c -o obj/orderedArray.o -ffreestanding
-	~/Documents/Cross/Install/bin/i686-elf-gcc -m32 -c include/task.c -o obj/task.o -ffreestanding
-	~/Documents/Cross/Install/bin/i686-elf-gcc -m32 -c include/gdt.c -o obj/gdt.o -ffreestanding
-	~/Documents/Cross/Install/bin/i686-elf-gcc -m32 -c include/vfs.c -o obj/vfs.o -ffreestanding
-	~/Documents/Cross/Install/bin/i686-elf-gcc -m32 -c include/usermode.c -o obj/usermode.o -ffreestanding
-	~/Documents/Cross/Install/bin/i686-elf-gcc -m32 -c include/chess.c -o obj/chess.o -ffreestanding
-	~/Documents/Cross/Install/bin/i686-elf-gcc -m32 -c include/procFS.c -o obj/procFS.o -ffreestanding
-	~/Documents/Cross/Install/bin/i686-elf-gcc -m32 -c include/syscall.c -o obj/syscall.o -ffreestanding
-	~/Documents/Cross/Install/bin/i686-elf-gcc -m32 -c include/mouse.c -o obj/mouse.o -ffreestanding
-	~/Documents/Cross/Install/bin/i686-elf-gcc -m32 -c include/sound.c -o obj/sound.o -ffreestanding
-	~/Documents/Cross/Install/bin/i686-elf-gcc -m32 -c include/stack.c -o obj/stack.o -ffreestanding
-	~/Documents/Cross/Install/bin/i686-elf-gcc -m32 -c include/interpreter.c -o obj/interpreter.o -ffreestanding
-	~/Documents/Cross/Install/bin/i686-elf-gcc -m32 -c include/pci.c -o obj/pci.o -ffreestanding
-	~/Documents/Cross/Install/bin/i686-elf-gcc -m32 -c include/ahci.c -o obj/ahci.o -ffreestanding
-	~/Documents/Cross/Install/bin/i686-elf-gcc -m32 -c include/disk.c -o obj/disk.o -ffreestanding
-	~/Documents/Cross/Install/bin/i686-elf-gcc -m32 -c include/tar.c -o obj/tar.o -ffreestanding
-	~/Documents/Cross/Install/bin/i686-elf-gcc -m32 -c include/graphic.c -o obj/graphic.o -ffreestanding
-	~/Documents/Cross/Install/bin/i686-elf-gcc -m32 -c include/rtc.c -o obj/rtc.o -ffreestanding
+	$(CC) kernel.c -o kc.o $(CFLAGS)
+	$(CC) include/system.c -o obj/system.o $(CFLAGS)
+	$(CC) include/isr.c -o obj/isr.o $(CFLAGS)
+	$(CC) include/idt.c -o obj/idt.o $(CFLAGS)
+	$(CC) include/util.c -o obj/util.o $(CFLAGS)
+	$(CC) include/string.c -o obj/string.o $(CFLAGS)
+	$(CC) include/screen.c -o obj/screen.o $(CFLAGS)
+	$(CC) include/keyboard.c -o obj/keyboard.o $(CFLAGS)
+	$(CC) include/paging.c -o obj/paging.o $(CFLAGS)
+	$(CC) include/timer.c -o obj/timer.o $(CFLAGS)
+	$(CC) include/kheap.c -o obj/kheap.o $(CFLAGS)
+	$(CC) include/orderedArray.c -o obj/orderedArray.o $(CFLAGS)
+	$(CC) include/task.c -o obj/task.o $(CFLAGS)
+	$(CC) include/gdt.c -o obj/gdt.o $(CFLAGS)
+	$(CC) include/chess.c -o obj/chess.o $(CFLAGS)
+	$(CC) include/procFS.c -o obj/procFS.o $(CFLAGS)
+	$(CC) include/syscall.c -o obj/syscall.o $(CFLAGS)
+	$(CC) include/mouse.c -o obj/mouse.o $(CFLAGS)
+	$(CC) include/sound.c -o obj/sound.o $(CFLAGS)
+	$(CC) include/stack.c -o obj/stack.o $(CFLAGS)
+	$(CC) include/interpreter.c -o obj/interpreter.o $(CFLAGS)
+	$(CC) include/pci.c -o obj/pci.o $(CFLAGS)
+	$(CC) include/ahci.c -o obj/ahci.o $(CFLAGS)
+	$(CC) include/disk.c -o obj/disk.o $(CFLAGS)
+	$(CC) include/tar.c -o obj/tar.o $(CFLAGS)
+	$(CC) include/graphic.c -o obj/graphic.o $(CFLAGS)
+	$(CC) include/rtc.c -o obj/rtc.o $(CFLAGS)
 
-	~/Documents/Cross/Install/bin/i686-elf-ld -m elf_i386 -T link.ld -o AMOS/boot/AMOS.bin kasm.o kc.o obj/isr.o obj/string.o obj/system.o obj/screen.o obj/keyboard.o obj/util.o obj/idt.o obj/paging.o obj/kheap.o obj/timer.o obj/isrAsm.o obj/orderedArray.o obj/task.o obj/gdt.o obj/gdtAsm.o obj/vfs.o obj/usermode.o obj/usermodeAsm.o obj/pagingAsm.o obj/chess.o obj/procFS.o obj/syscall.o obj/switch.o obj/mouse.o obj/sound.o obj/stack.o obj/interpreter.o obj/pci.o obj/ahci.o obj/disk.o obj/tar.o obj/graphicAsm.o obj/graphic.o obj/rtc.o
+	$(LD) $(LD_FLAGS) AMOS/boot/AMOS.bin kasm.o kc.o obj/isr.o obj/string.o obj/system.o obj/screen.o obj/keyboard.o obj/util.o obj/idt.o obj/paging.o obj/kheap.o obj/timer.o obj/isrAsm.o obj/orderedArray.o obj/task.o obj/gdt.o obj/gdtAsm.o obj/usermode.o obj/pagingAsm.o obj/chess.o obj/procFS.o obj/syscall.o obj/switch.o obj/mouse.o obj/sound.o obj/stack.o obj/interpreter.o obj/pci.o obj/ahci.o obj/disk.o obj/tar.o obj/graphicAsm.o obj/graphic.o obj/rtc.o
 
 clear:
 	rm -f AMOS/boot/AMOS.bin
@@ -51,7 +61,6 @@ clear:
 run:
 	make
 	mkdir -p AMOS/boot/grub
-	cp grub.cfg AMOS/boot/grub/grub.cfg
 	grub-mkrescue -o AMOS.iso AMOS
-	qemu-system-x86_64 -machine q35 -drive file=disk.img -cdrom AMOS.iso
+	$(QEMU) $(QEMU_FLAGS) AMOS.iso
 	#grub-mkrescue -o AMOS.iso AMOS/

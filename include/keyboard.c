@@ -1,5 +1,13 @@
 #include "keyboard.h"
 
+/*
+  The function reads a character from the keyboard.
+
+  Input:
+    None.
+  Output:
+    The read character.
+*/
 char readChar()
 {
   char buffstr[2] = { 0 };
@@ -303,7 +311,15 @@ char readChar()
   return buffstr[0];
 }
 
-void readStr(string buffstr)
+/*
+  The function reads a string from the keyboard.
+
+  Input:
+    A pointer to the string to read to .
+  Output:
+    None.
+*/
+void readStr(char* buffstr)
 {
     char buff;
     uint8 i = 0;
@@ -329,15 +345,4 @@ void readStr(string buffstr)
         }
     }
     buffstr[i - 1] = 0;
-}
-
-void keyboardInput_handler()
-{
-    print("Key Pressed!\n");
-    //readChar();
-}
-
-void init_keyboard()
-{
-    register_interrupt_handler(KEYBOARD_IRQ, &keyboardInput_handler);
 }

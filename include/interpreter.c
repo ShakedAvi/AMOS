@@ -1,110 +1,19 @@
 #include "interpreter.h"
 
-Variable programVars[16];
-uint32 numVars;
-
-Stack programStack;
+stack_t programStack;
 
 char* programLines[20];
 int currentLine;
 int maxLines;
 
-char get(void)
-{
-  char c = readChar();
-  return c;
-} // get one byte
+/*
+  The function interpretes a command on the machine.
 
-int getInt(char* toInt)
-{
-  return ascii_to_int(toInt);
-}
-
-/*uint32 find_variable(char name)
-{
-  for(int i = 0; i < numVars; i++)
-  {
-    if (programVars[i]->name == name)
-    {
-      return i;
-    }
-  }
-  return -1;
-}*/
-
-/*uint32 statement()
-{
-  char currChar = ' ';
-  int currVarIndex = 0;
-  do
-  {
-    currChar = get();
-    if(currChar >= 'A' && currChar <= 'Z') // Variable
-    {
-      currVarIndex = find_variable(c);
-      if(currVarIndex == -1)
-      {
-        programVars[numVars].name = currChar;
-      }
-
-      do
-      {
-        currChar = get();
-      }
-      while(currChar = ' ')
-
-      if (currChar == '=')
-      {
-        do
-        {
-          currChar = get();
-        }
-        while(currChar = ' ')
-
-        if (currChar == 'f' || currChar == 't') // Bool
-        {
-          programVars[numVars].type = BOOL_TYPE;
-          programVars[numVars].value = currChar;
-          currChar = get();
-          if (currChar != ';')
-          {
-            print("Syntax Error After Initializing Boolean!\n");
-            return;
-          }
-        }
-        else if(currChar == '\'') // Char
-        {
-          programVars[numVars].type = CHAR_TYPE;
-          currChar = get();
-          programVars[numVars].value = currChar;
-          currChar = get();
-          if (currChar != '\'')
-          {
-            print("Syntax Error After Initializing Char!\n");
-            return;
-          }
-          currChar = get();
-          if (currChar != ';')
-          {
-            print("Syntax Error After Initializing Char!\n");
-            return;
-          }
-        }
-        else // Int
-        {
-          programVars[numVars].type = CHAR_TYPE;
-          programVars[numVars].value = getInt();
-        }
-      }
-    }
-    else // Expression
-    {
-
-    }
-  }
-  while(currChar != ';')
-}*/
-
+  Input:
+    The command to interpret.
+  Output:
+    Return code (-1 if the interpret went wrong).
+*/
 int32 parse_command(char* currStr)
 {
   char currCommand[10] = { 0 };
@@ -120,7 +29,7 @@ int32 parse_command(char* currStr)
 
   currCommand[i] = 0;
 
-  if (strEql(currCommand, "push"))
+  if (strEql(currCommand, "push")) // Push a new value to the stack
   {
     if (currStr[i] = ' ')
     {
@@ -131,17 +40,17 @@ int32 parse_command(char* currStr)
         i++;
         j++;
       }
-      push(&programStack, getInt(currNum));
+      push(&programStack, ascii_to_int(currNum));
     }
   }
-  else if(strEql(currCommand, "pop"))
+  else if(strEql(currCommand, "pop")) // Pop a value from the stack
   {
     if (currStr[i] == '\0')
     {
       pop(&programStack);
     }
   }
-  else if(strEql(currCommand, "add"))
+  else if(strEql(currCommand, "add")) // Add the two top values of the stack
   {
     if (currStr[i] == '\0')
     {
@@ -151,7 +60,7 @@ int32 parse_command(char* currStr)
       push(&programStack, first + second);
     }
   }
-  else if(strEql(currCommand, "dec"))
+  else if(strEql(currCommand, "sub")) // Subtract the two top values of the stack
   {
     if (currStr[i] == '\0')
     {
@@ -161,7 +70,7 @@ int32 parse_command(char* currStr)
       push(&programStack, first - second);
     }
   }
-  else if(strEql(currCommand, "mul"))
+  else if(strEql(currCommand, "mul")) // Multiply the two top values of the stack
   {
     if (currStr[i] == '\0')
     {
@@ -171,7 +80,7 @@ int32 parse_command(char* currStr)
       push(&programStack, first * second);
     }
   }
-  else if(strEql(currCommand, "div"))
+  else if(strEql(currCommand, "div")) // Divide the two top values of the stack
   {
     if (currStr[i] == '\0')
     {
@@ -192,7 +101,7 @@ int32 parse_command(char* currStr)
         i++;
         j++;
       }
-      currentLine = getInt(currNum);
+      currentLine = ascii_to_int(currNum);
     }
   }
   else if(strEql(currCommand, "jump")) // jump to <address> (a line number)
@@ -207,9 +116,9 @@ int32 parse_command(char* currStr)
     print("\nJumping to: ");
     print(currNum);
     print("\n");
-    currentLine = getInt(currNum);
+    currentLine = ascii_to_int(currNum);
   }
-  else if(strEql(currCommand, "print"))
+  else if(strEql(currCommand, "print")) // Print the top value of the stack
   {
     if (currStr[i] == '\0')
     {
@@ -218,7 +127,7 @@ int32 parse_command(char* currStr)
       print("\n");
     }
   }
-  else if(strEql(currCommand, "dup"))
+  else if(strEql(currCommand, "dup")) // Duplicate the top value of the stack
   {
     if (currStr[i] == '\0')
     {
@@ -240,6 +149,14 @@ int32 parse_command(char* currStr)
   currentLine++;
 }
 
+/*
+  The function sets up the interpreter and loads a code into it.
+
+  Input:
+    The code to run.
+  Output:
+    None.
+*/
 void run_interpreter(char* code_to_run)
 {
   init_stack(&programStack);
@@ -263,48 +180,19 @@ void run_interpreter(char* code_to_run)
     currStr[j] = 0;
     i++;
 
-    //print("\n");
-    //print(currStr);
-    //print("\n");
-
-    /*print("\n");
-    print(programLines[maxLines]);
-    print("\n");
-    print("\n");
-    print(currStr);
-    print("\n");*/
     programLines[maxLines] = (char*)kmalloc(20 * sizeof(char));
     strCpy(programLines[maxLines], currStr);
 
     maxLines++;
 
-    //print("\n");
-    //print(currStr);
-    //print("\n");
-
     for(int k = 0; k < 20; k++)
     {
       currStr[k] = 0;
-      //programLines[maxLines][k] = 0;
     }
   }
 
-  /*print("\n");
-  print(programLines[0]);
-  print("\n");*/
-
   while(endFlag)
   {
-    /*itoa(currentLine, printMe, 10);
-    print("Current line = ");
-    print(printMe);
-    print("\n");
-
-    itoa(maxLines, printMe, 10);
-    print("Max lines = ");
-    print(printMe);
-    print("\n");*/
-
     print("\n");
 
     if (currentLine == maxLines)
@@ -313,6 +201,13 @@ void run_interpreter(char* code_to_run)
       readStr(currStr);
       print("\n");
 
+      if(strEql(currStr, "exit"))
+      {
+        print("\nQuit!\n");
+        destroy(&programStack);
+        return;
+      }
+
       if(parse_command(currStr) == -1)
       {
         endFlag = 0;
@@ -320,15 +215,10 @@ void run_interpreter(char* code_to_run)
     }
     else
     {
-      //print("Jumped to command: ");
-      /*print("\n");
-      print(programLines[currentLine]);
-      print("\n");*/
       if(parse_command(programLines[currentLine]) == -1)
       {
         endFlag = 0;
       }
     }
-    //print("\n");
   }
 }

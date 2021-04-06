@@ -7,25 +7,14 @@
 #include "string.h"
 #include "stack.h"
 
-enum Types { BOOL_TYPE, INT_TYPE, FLOAT_TYPE, CHAR_TYPE, STRING_TYPE };
+/*
+  The function sets up the interpreter and loads a code into it.
 
-typedef struct Variable
-{
-  char name;
-  uint32 type;
-  uint32 value;
-}Variable;
-
-Variable programVars[16];
-uint32 num_vars;
-
-uint32 find_variable(char* name);
-
-uint32 factor();
-uint32 term();
-uint32 statement();
-uint32 expression();
-
+  Input:
+    The code to run.
+  Output:
+    None.
+*/
 void run_interpreter(char* code_to_run);
 
 #endif

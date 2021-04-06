@@ -6,6 +6,7 @@
 #include "util.h"
 #include "sound.h"
 
+// Macros to define syscalls with:
 #define DECL_SYSCALL0(fn) int syscall_##fn();
 #define DECL_SYSCALL1(fn,p1) int syscall_##fn(p1);
 #define DECL_SYSCALL2(fn,p1,p2) int syscall_##fn(p1,p2);
@@ -60,14 +61,22 @@ int syscall_##fn(P1 p1, P2 p2, P3 p3, P4 p4, P5 p5) \
   asm volatile("int $0x80" : "=a" (a) : "0" (num), "b" ((int)p1), "c" ((int)p2), "d" ((int)p3), "S" ((int)p4), "D" ((int)p5)); \
   return a; \
 }
+// End of macros
 
+// Our example syscall
 void f1();
 
-//DECL_SYSCALL1(print, char*)
+// Defining our example syscall
 DECL_SYSCALL0(f1)
-DECL_SYSCALL3(create_task, int taskIdx, void *method, char *stack)
-DECL_SYSCALL0(free_tasks)
 
+/*
+  The function initializes syscalls.
+
+  Input:
+    None.
+  Output:
+    None.
+*/
 void init_syscalls();
 
 #endif

@@ -1,67 +1,46 @@
 #include "tar.h"
 
 uint32 currFile;
-struct tar_t* archive;
 
-fs ustar = {
-    .name  = "ustar",
-    .init  = tar_init,
-
-    .fops =
-        {
-        .open    = tar_open,
-        .read    = tar_read,
-        .write   = tar_write,
-        .close   = tar_close,
-        .ls = tar_ls,
-    },
+fs_t ustar = {
+    .name  = "ustar"
 };
-vnode *ustar_root;
 
-int tar_init()
+/*
+  The function initializes the TAR file system.
+
+  Input:
+    None.
+  Output:
+    Return code (0 for success).
+*/
+int32 tar_init()
 {
   currFile = 0;
-  ustar_root = (vnode*)kmalloc(sizeof(struct vnode));
-  ustar_root->fs = &ustar;
-  vfs_install(&ustar);
-
-  archive = 0;
 
   char ptr[512] = { 0 };
   uint64 v = 1024 * currFile;
   uint32 high = (uint32)((v & 0xFFFFFFFF00000000LL) >> 32);
   uint32 low = (uint32)(v & 0xFFFFFFFFLL);
 
-  /*char printMe[10] = { 0 };
-  itoa(low, printMe, 16);
-  print("Low: ");
-  print(printMe);
-  print("\n");
-
-  itoa(high, printMe, 16);
-  print("High: ");
-  print(printMe);
-  print("\n");*/
-
-  char fileNumber[10];
+  char fileNumber[10] = { 0 };
 
   disk_access(diskPort, low, high, 1, ptr, READ);
 
   while(!memory_compare(ptr + 257, "ustar", 5))
   {
-      ustar.files[currFile] = (file*)kmalloc(sizeof(file));
+      ustar.files[currFile] = (file_t*)kmalloc(sizeof(file_t));
       memory_copy(ptr, ustar.files[currFile]->name, 100);
-      ustar.files[currFile]->vnode = (vnode*)kmalloc(sizeof(vnode));
+      ustar.files[currFile]->vnode = (vnode_t*)kmalloc(sizeof(vnode_t));
       ustar.files[currFile]->vnode->ref = currFile;
 
       currFile++;
-      //ptr += (((filesize + 511) / 512) + 1) * 512;
 
       for (int k = 0; k < 512; k++)
       {
         ptr[k] = 0;
       }
-      v = 1024 * currFile;
+      v = (1024 * currFile) / 512;
       high = (uint32)((v & 0xFFFFFFFF00000000LL) >> 32);
       low = (uint32)(v & 0xFFFFFFFFLL);
       disk_access(diskPort, low, high, 1, ptr, READ);
@@ -70,7 +49,16 @@ int tar_init()
   return 0;
 }
 
-int32 tar_open(file* file)
+/*
+  The function opens a new TAR file, or returns a pointer to the file if it
+  already exists.
+
+  Input:
+    A file with information about the file to open.
+  Output:
+    Return code (0 for success).
+*/
+int32 tar_open(file_t* file)
 {
   char fileNumber[10] = { 0 };
 
@@ -79,50 +67,90 @@ int32 tar_open(file* file)
   {
     if(strEql(ustar.files[i]->name, file->name))
     {
-      strCpy(file->name, ustar.files[i]->name);
       file->vnode->ref = ustar.files[i]->vnode->ref;
       return 0;
     }
   }
 
   //Creating new file and saving it to disk
-  struct tar_t fileHeader = {0};
+  tar_t fileHeader = {0};
   strCpy(fileHeader.name, file->name);
   strCpy(fileHeader.ustar, "ustar\000");
   memory_set(fileHeader.block, 0, 512);
-  uint64 v = 1024 * currFile;
+  uint64 v = (1024 * currFile) / 512;
   uint32 high = (uint32)((v & 0xFFFFFFFF00000000LL) >> 32);
   uint32 low = (uint32)(v & 0xFFFFFFFFLL);
   char* str = (char*)&fileHeader;
-  /*print("\n");
-  for (uint32 i = 0; i < 1024; i++) {
-    printch(str[i]);
-  }
-  print("\n");*/
+
   disk_access(diskPort, low, high, 2, str, WRITE);
 
-  struct file* newFile = (struct file*)kmalloc(sizeof(struct file));
-  newFile->vnode = (vnode*)kmalloc(sizeof(vnode));
+  file_t* newFile = (file_t*)kmalloc(sizeof(file_t));
+  newFile->vnode = (vnode_t*)kmalloc(sizeof(vnode_t));
   newFile->vnode->fs = &ustar;
   newFile->vnode->ref = currFile;
 
   strCpy(newFile->name, file->name);
   ustar.files[currFile] = newFile;
   currFile++;
-  file = newFile;
+  file->vnode->ref = newFile->vnode->ref;
   return 0;
 }
 
-int32 tar_close(file* file)
+/*
+  The function removes a TAR file.
+
+  Input:
+    A file with information about the file to remove.
+  Output:
+    Return code (0 for success).
+*/
+int32 tar_close(file_t* file)
 {
+  currFile--;
+
+  uint64 v = (1024 * currFile) / 512;
+  uint32 high = (uint32)((v & 0xFFFFFFFF00000000LL) >> 32);
+  uint32 low = (uint32)(v & 0xFFFFFFFFLL);
+
+  char buffer[1024] = { 0 };
+  disk_access(diskPort, low, high, 2, buffer, READ);
+
+  v = (1024 * file->vnode->ref) / 512;
+  high = (uint32)((v & 0xFFFFFFFF00000000LL) >> 32);
+  low = (uint32)(v & 0xFFFFFFFFLL);
+
+  disk_access(diskPort, low, high, 2, buffer, WRITE);
+
+  memory_set(buffer, 0, 1024);
+
+  v = (1024 * currFile) / 512;
+  high = (uint32)((v & 0xFFFFFFFF00000000LL) >> 32);
+  low = (uint32)(v & 0xFFFFFFFFLL);
+
+  disk_access(diskPort, low, high, 2, buffer, WRITE);
+
+  ustar.files[currFile]->vnode->ref = file->vnode->ref;
+  ustar.files[file->vnode->ref] = ustar.files[currFile];
+
   kfree(file);
+  ustar.files[currFile] = 0;
+
   return 0;
 }
 
-int32 tar_read(file* file, char* buffer, uint32 size)
+/*
+  The function reads the content of a file.
+
+  Input:
+    A file with information about the file to read, the content's buffer and the size
+    to read (in sectors).
+  Output:
+    Return code (0 for success).
+*/
+int32 tar_read(file_t* file, char* buffer, uint32 size)
 {
   // Splitting the file address into high and low dwords
-  uint64 v = (1024 * file->vnode->ref + 512) / 512; //file->vnode->ref + 512;
+  uint64 v = (1024 * file->vnode->ref + 512) / 512;
   uint32 high = (uint32)((v & 0xFFFFFFFF00000000LL) >> 32);
   uint32 low = (uint32)(v & 0xFFFFFFFFLL);
 
@@ -130,11 +158,20 @@ int32 tar_read(file* file, char* buffer, uint32 size)
   return 0;
 }
 
-int32 tar_write(file* file, char* buffer, uint32 size)
+/*
+  The function writes the content of a file.
+
+  Input:
+    A file with information about the file to write, the content's buffer and the size
+    to write (in sectors).
+  Output:
+    Return code (0 for success).
+*/
+int32 tar_write(file_t* file, char* buffer, uint32 size)
 {
   char fileNumber[10] = { 0 };
 
-  uint64 v = (1024 * file->vnode->ref + 512) / 512; //file->vnode->ref + 512;
+  uint64 v = (1024 * file->vnode->ref + 512) / 512;
   uint32 high = (uint32)((v & 0xFFFFFFFF00000000LL) >> 32);
   uint32 low = (uint32)(v & 0xFFFFFFFFLL);
 
@@ -142,6 +179,14 @@ int32 tar_write(file* file, char* buffer, uint32 size)
   return 0;
 }
 
+/*
+  The function prints all of the TAR files.
+
+  Input:
+    None.
+  Output:
+    None.
+*/
 void tar_ls()
 {
   print("\n");

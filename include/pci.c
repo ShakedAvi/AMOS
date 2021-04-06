@@ -2,14 +2,14 @@
 
 uint32 pci_size_map[100];
 pci_dev_t dev_zero = {0};
-//devices devices_array[]
 
 /*
-	Reads from PCI via port 0xCFC (PCI_CONFIG_DATA)
-	Input: PCI Device ( Saved as the Union pci_dev_t, contains data about the device like bus number, device number and function number)
-				 Field: Offset of data to read (Vendor Id, Class Id, Device Id ect.)
+	The function reads from PCI via port 0xCFC (PCI_CONFIG_DATA)
+	Input:
+		PCI Device ( Saved as the Union pci_dev_t, contains data about the device like bus number, device number and function number)
+		Field: Offset of data to read (Vendor Id, Class Id, Device Id ect.)
   Output:
-				 Data from PCI
+		Data from PCI
 */
 uint32 pci_read(pci_dev_t dev, uint32 field) {
 	// Only most significant 6 bits of the field
@@ -40,7 +40,12 @@ uint32 pci_read(pci_dev_t dev, uint32 field) {
 }
 
 /*
-    Write pci field
+  The function writes pci field.
+
+  Input:
+    The address of the frame to set up.
+  Output:
+    None.
 */
 void pci_write(pci_dev_t dev, uint32 field, uint32 value)
 {
@@ -100,35 +105,12 @@ pci_dev_t pci_scan_function(uint32 bus, uint32 device, uint32 function)
   {
 		pci_scan_bus(get_secondary_bus(dev));
 	}
-	// If type matches, we've found the device, just return it
-	/*if(device_type == -1 || device_type == get_device_type(dev))
-  {
-		uint32 devid  = pci_read(dev, PCI_DEVICE_ID);
-		uint32 vendid = pci_read(dev, PCI_VENDOR_ID);
-		if(devid == device_id && vendor_id == vendid)
-		{
-      return dev;
-    }
-  }*/
 
 	uint32 device_id  = pci_read(dev, PCI_DEVICE_ID);
 	uint32 vendor_id = pci_read(dev, PCI_VENDOR_ID);
 	uint8 class_id = pci_read(dev, PCI_CLASS);
 	uint8 subclass_id = get_device_type(dev);
-	/*if (vendor_id != PCI_NONE)
-	{
-		print(" Subclass ID:");
-		char str3[8] = {0};
-		itoa(subclass_id, str3, 16);
-		print(" ");
-		print(str3);
-		print(" Class ID: ");
-		char str4[8] = {0};
-		itoa(class_id, str4, 16);
-		print(" ");
-		print(str4);
-		print("\n");
-	}*/
+
 	if(class_id == 0x01 && subclass_id == 0x06 && pci_read(dev, PCI_PROG_IF) == 0x01)
 	{
 		print("AHCI FOUND! \n");

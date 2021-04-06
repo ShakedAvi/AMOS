@@ -1,6 +1,14 @@
 #include "stack.h"
 
-void init_stack(Stack* stack)
+/*
+  The function initializes a stack.
+
+  Input:
+    The stack to initialize.
+  Output:
+    None.
+*/
+void init_stack(stack_t* stack)
 {
     int* content;
 
@@ -17,7 +25,15 @@ void init_stack(Stack* stack)
     stack->top = -1;
 }
 
-void destroy(Stack* stack)
+/*
+  The function destroys a stack.
+
+  Input:
+    The stack to destroy.
+  Output:
+    None.
+*/
+void destroy(stack_t* stack)
 {
     kfree(stack->content);
 
@@ -26,7 +42,15 @@ void destroy(Stack* stack)
     stack->top = -1;
 }
 
-void resize(Stack* stack)
+/*
+  The function resizes a stack.
+
+  Input:
+    The stack to resize.
+  Output:
+    None.
+*/
+void resize(stack_t* stack)
 {
     int* resized_content;
     resized_content = (int*)krealloc(stack->content, sizeof(int) * stack->current_size, sizeof(int) * stack->current_size * 2);
@@ -35,37 +59,87 @@ void resize(Stack* stack)
     stack->current_size = stack->current_size * 2;
 }
 
-int is_empty(Stack* stack)
+/*
+  The function checks if a stack is empty.
+
+  Input:
+    The stack to check.
+  Output:
+    If the stack is empty (1 if it is).
+*/
+int is_empty(stack_t* stack)
 {
     if (stack->top < 0)
-        return 1;
+    {
+      return 1;
+    }
     else
-        return 0;
+    {
+      return 0;
+    }
 }
 
-int is_full(Stack* stack)
+/*
+  The function checks if a stack is full.
+
+  Input:
+    The stack to check.
+  Output:
+    If the stack is full (1 if it is).
+*/
+int is_full(stack_t* stack)
 {
     if (stack->top == stack->current_size - 1)
-        return 1;
+    {
+      return 1;
+    }
     else
-        return 0;
+    {
+      return 0;
+    }
 }
 
-void push(Stack* stack, int data)
+/*
+  The function pushes a new value to a stack.
+
+  Input:
+    The value to push and the stack to push into.
+  Output:
+    None.
+*/
+void push(stack_t* stack, int data)
 {
     if (is_full(stack) == 1)
-        resize(stack);
+    {
+      resize(stack);
+    }
 
     stack->top = stack->top + 1;
     stack->content[stack->top] = data;
 }
 
-int peek(Stack* stack)
+/*
+  The function returns the top element of a stack.
+
+  Input:
+    The stack to return it's top element.
+  Output:
+    The top element of the given stack.
+*/
+int peek(stack_t* stack)
 {
     return stack->content[stack->top];
 }
 
-int pop(Stack* stack)
+/*
+  The function returns the top element of a stack and removes it.
+
+  Input:
+    The stack to pop it's top element.
+  Output:
+    The top element of the given stack.
+*/
+int pop(stack_t* stack)
 {
     if (is_empty(stack) == 0)
     {

@@ -1,7 +1,7 @@
 #include "isr.h"
 
 /* To print the message which defines every exception */
-string exception_messages[] =
+char* exception_messages[] =
 {
     "Division By Zero",
     "Debug",
@@ -40,12 +40,28 @@ string exception_messages[] =
     "Reserved"
 };
 
+/*
+  The function registers a new interrupt into the IDT.
+
+  Input:
+    The code to run.
+  Output:
+    None.
+*/
 void register_interrupt_handler(uint8 n, interrupt_handler_t handler)
 {
     interrupt_handlers[n] = handler;
     set_idt_gate(n, (uint32)handler);
 }
 
+/*
+  The function sets up all exception interrupts and calls the function which sets the IDT.
+
+  Input:
+    None.
+  Output:
+    None.
+*/
 void isr_install()
 {
   idt_reg.limit = sizeof (idt_gate_t) * IDT_ENTRIES - 1;
@@ -288,7 +304,15 @@ void isr128()
     asm("hlt");
 }
 
-void irq_handler(registers_t *regs)
+/*
+  The software interrupts handler.
+
+  Input:
+    The machine registers in 32 bit.
+  Output:
+    None.
+*/
+void irq_handler(registers32_t *regs)
 {
     if (regs->int_no >= 40)
     {
@@ -301,5 +325,3 @@ void irq_handler(registers_t *regs)
       interrupt_handlers[regs->int_no] (regs);
     }
 }
-
-/*End Handlers*/

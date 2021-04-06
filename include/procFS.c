@@ -1,60 +1,140 @@
 #include "procFS.h"
 
-fs procfs;
-
-vnode *procfs_root = 0;
-
-static proc* currentprocs[5];
+static proc_t* currentprocs[5];
 static int currPID = 0;
 
-fs procfs =
+fs_t procfs =
 {
-    .name  = "procfs",
-    .init  = procfs_init,
-
-    .fops =
-		{
-        .open    = procfs_open,
-        .read    = procfs_read,
-        .close   = procfs_close,
-    },
+    .name  = "procfs"
 };
 
-static int procfs_init()
+/*
+  The function initializes the processes' file system.
+
+  Input:
+    None.
+  Output:
+    Return code (0 for success).
+*/
+int procfs_init()
 {
-    procfs_root = (vnode*)kmalloc(sizeof(struct vnode));
+    proc_t* rootProc = (proc_t*)kmalloc(sizeof(proc_t));
+    strCpy(rootProc->name, "root");
+    rootProc->permissions = 0;
+    rootProc->pid = currPID;
 
-    procfs_root->fs = &procfs;
+    currentprocs[currPID++] = rootProc;
 
-    vfs_install(&procfs);
     return 0;
 }
 
-int procfs_open(file *file)
-{
-	proc* newProc = (proc*)kmalloc(sizeof(proc*));
-	newProc->name = (char*)(file->vnode->p);
-	currentprocs[currPID] = newProc;
-	currPID++;
+/*
+  The function opens a new process file.
 
-	struct file* newPFile = (struct file*)kmalloc(sizeof(struct file*));
-	newPFile->vnode = (vnode*)kmalloc(sizeof(vnode*));
+  Input:
+    A file with information about the process to open.
+  Output:
+    Return code (0 for success).
+*/
+int procfs_open(file_t* file)
+{
+	proc_t* newProc = (proc_t*)kmalloc(sizeof(proc_t));
+  strCpy(newProc->name, (char*)(file->name));
+  newProc->pid = currPID;
+  newProc->permissions = file->flags;
+	currentprocs[currPID] = newProc;
+  print("\n");
+  print(currentprocs[currPID]->name);
+  print("\n");
+
+	file_t* newPFile = (file_t*)kmalloc(sizeof(file_t));
+
+  strCpy(newPFile->name, file->name);
+  newPFile->vnode = (vnode_t*)kmalloc(sizeof(vnode_t));
 	newPFile->vnode->fs = &procfs;
-	newPFile->vnode->p = (void*)currPID;
+  newPFile->vnode->ref = currPID;
+	newPFile->flags = file->flags; // permissions
 
 	procfs.files[currPID] = newPFile;
+  file->vnode->ref = currPID;
+
+  currPID++;
+  return 0;
 }
 
-uint32 procfs_read(file *file, void *buf, uint32 size)
+/*
+  The function removes a process file.
+
+  Input:
+    A file with information about the process to close.
+  Output:
+    Return code (0 for success).
+*/
+int procfs_close(file_t *file)
 {
-	strCpy(buf, currentprocs[(int)(file->vnode->p)]->name);
-	return 0;
+  int i = 0;
+  for (i = 0; i < currPID; i++)
+  {
+    if(strEql(file->name, currentprocs[i]->name))
+    {
+      file->vnode->ref = i;
+      break;
+    }
+  }
+
+  if(i == currPID)
+  {
+    print("\nError! Process was not found!\n");
+    return -1;
+  }
+
+	kfree(currentprocs[(int)(file->vnode->ref)]->name);
+	kfree(currentprocs[(int)(file->vnode->ref)]);
+  currentprocs[(int)(file->vnode->ref)] = 0;
+	kfree(procfs.files[(int)(file->vnode->ref)]->vnode);
+	kfree(procfs.files[(int)(file->vnode->ref)]);
+  procfs.files[(int)file->vnode->ref] = 0;
+
+  if(i == currPID - 1)
+  {
+    currPID = 1;
+  }
+
+  return 0;
 }
 
-int procfs_close(file *file)
+/*
+  The function prints all of the processes files.
+
+  Input:
+    None.
+  Output:
+    None.
+*/
+void procfs_ls()
 {
-	kfree(currentprocs[(int)(file->vnode->p)]->name);
-	kfree(currentprocs[(int)(file->vnode->p)]);
-	kfree(procfs.files[(int)(file->vnode->p)]->vnode);
-	kfree(procfs.files[(int)(file->vnode->p)]);
+  char printMe[20] = { 0 };
+
+  print("\nPID:");
+  print("    ");
+  print("Name: ");
+  print("    ");
+  print("Permissions:\n\n");
+
+  for(int i = 0; i < currPID; i++)
+  {
+    itoa(currentprocs[i]->pid, printMe, 10);
+    print(printMe);
+    print("       ");
+    print(currentprocs[i]->name);
+    print("      ");
+    if(currentprocs[i]->permissions)
+    {
+      print("User Mode\n");
+    }
+    else
+    {
+      print("Kernel Mode\n");
+    }
+  }
 }

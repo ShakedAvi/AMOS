@@ -11,6 +11,14 @@ gdt_ptr_t   gdt_ptr;
 
 tss_entry_t tss_entry;
 
+/*
+  The function initializes the GDT.
+
+  Input:
+    None.
+  Output:
+    None.
+*/
 void init_gdt()
 {
    gdt_ptr.limit = (sizeof(gdt_entry_t) * 6) - 1;
@@ -30,6 +38,15 @@ void init_gdt()
    tss_flush();
 }
 
+
+/*
+  The function sets a GDT gate.
+
+  Input:
+    The number of the gate and it's data.
+  Output:
+    None.
+*/
 static void gdt_set_gate(int32 num, uint32 base, uint32 limit, uint8 access, uint8 gran)
 {
    gdt_entries[num].base_low    = (base & 0xFFFF);
@@ -43,6 +60,15 @@ static void gdt_set_gate(int32 num, uint32 base, uint32 limit, uint8 access, uin
    gdt_entries[num].access      = access;
 }
 
+
+/*
+  The function writes the TSS.
+
+  Input:
+    The number of the TSS gate in the GDT and it's data.
+  Output:
+    None.
+*/
 static void write_tss(int32 num, uint16 ss0, uint32 esp0)
 {
    uint32 base = (uint32) &tss_entry;
@@ -54,7 +80,6 @@ static void write_tss(int32 num, uint16 ss0, uint32 esp0)
    memory_set(&tss_entry, 0, sizeof(tss_entry));
 
    tss_entry.ss0  = ss0;  // Set the kernel stack segment.
-   //tss_entry.esp0 = (uint32)kmalloc(2048) + 2048;
    asm volatile("mov %%esp, %0" : "=a"(tss_entry.esp0));
    tss_entry.iomap_base = sizeof(tss_entry_t);
 
@@ -62,6 +87,14 @@ static void write_tss(int32 num, uint16 ss0, uint32 esp0)
    tss_entry.ss = tss_entry.ds = tss_entry.es = tss_entry.fs = tss_entry.gs = 0x13;
 }
 
+/*
+  The function sets the kernel's stack.
+
+  Input:
+    The address of the new stack.
+  Output:
+    None.
+*/
 void set_kernel_stack(uint32 stack)
 {
    tss_entry.esp0 = stack;

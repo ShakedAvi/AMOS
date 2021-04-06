@@ -3,12 +3,30 @@
 time_t global_time;
 int32 bcd;
 
+/*
+  The function reads the current time from the Real Time Clock
+  to the time_t parameter.
+
+  Input:
+    time - A pointer to the time object to read the time to.
+  Output:
+    None.
+*/
 void gettime(time_t *time)
 {
-    memory_copy(&global_time, time, sizeof(time_t));
+    memory_copy((int8*)&global_time, (int8*)time, sizeof(time_t));
 }
 
-void rtc_handler(struct regs* r)
+/*
+  The handler of the Real Time Clock interrupt, which updates the time global variable
+  according to the clock.
+
+  Input:
+    The interrupt's coller's registers.
+  Output:
+    None.
+*/
+void rtc_handler(registers32_t* r)
 {
     if(read_register(0x0C) & 0x10)
     {
@@ -35,7 +53,15 @@ void rtc_handler(struct regs* r)
     }
 }
 
-void rtc_install(void)
+/*
+  The function initializes the Real Time Clock chip and adds it's handler to the IDT.
+
+  Input:
+    None.
+  Output:
+    None.
+*/
+void init_rtc()
 {
     uint8 status;
 

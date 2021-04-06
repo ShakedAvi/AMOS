@@ -1,40 +1,46 @@
 #include "syscall.h"
 
+// Example syscall
 void f1()
 {
   print("Welcome to User Mode Agent!\n");
   play_mission_impossible();
 }
 
-//DEFN_SYSCALL1(print, 0, char*)
+// Defining our example syscall
 DEFN_SYSCALL0(f1, 0)
-DEFN_SYSCALL3(create_task, 1, int, void*, char*)
-DEFN_SYSCALL0(free_tasks, 2)
 
-static void syscall_handler(registers_t *regs);
+void syscall_handler(registers32_t *regs);
 
-static void *syscalls[3] =
+static void* syscalls[1] =
 {
-   &f1,
-   &create_task,
-   &free_tasks,
-   //&open_file,
-   //&read_file,
-   //&write_file,
-   //&close_file,
+   &f1
 };
-uint32 num_syscalls = 3;
+uint32 num_syscalls = 1;
 
+/*
+  The function initializes syscalls.
+
+  Input:
+    None.
+  Output:
+    None.
+*/
 void init_syscalls()
 {
     register_interrupt_handler(0x80, &syscall_handler);
 }
 
-void syscall_handler(registers_t *regs)
-{
-   //if (regs->eax >= num_syscalls)
-    //  return;
+/*
+  The handler for all of the syscalls.
 
+  Input:
+    The syscall caller's registers.
+  Output:
+    None.
+*/
+void syscall_handler(registers32_t* regs)
+{
    void *location = syscalls[0];
 
    int ret = 0;

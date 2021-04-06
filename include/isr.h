@@ -92,9 +92,26 @@ void isr29();
 void isr30();
 void isr31();
 
-string exception_messages[32];
+char* exception_messages[32];
 
+/*
+  The function registers a new interrupt into the IDT.
+
+  Input:
+    The code to run.
+  Output:
+    None.
+*/
 void register_interrupt_handler(uint8 n, interrupt_handler_t handler);
+
+/*
+  The function sets up all exception interrupts and calls the function which sets the IDT.
+
+  Input:
+    None.
+  Output:
+    None.
+*/
 void isr_install();
 
 #endif

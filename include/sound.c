@@ -1,7 +1,15 @@
 #include "sound.h"
 
-//Play sound using built in speaker
-static void play_sound(uint32 nFrequence) {
+/*
+  The function plays sound using built in speaker.
+
+  Input:
+    The frequency of the sound to play.
+  Output:
+    None.
+*/
+static void play_sound(uint32 nFrequence)
+{
   int scale;
   if (nFrequence == 0)
   {
@@ -15,7 +23,14 @@ static void play_sound(uint32 nFrequence) {
   outportb(0x61, inportb(0x61) | 3);
 }
 
-//Make it stop beeping
+/*
+  The function stops the playing of a sound in the built in speaker.
+
+  Input:
+    None.
+  Output:
+    None.
+*/
 static void nosound()
 {
 	uint8 tmp = inportb(0x61) & 0xFC;
@@ -23,7 +38,14 @@ static void nosound()
 	outportb(0x61, tmp);
 }
 
-//Make a beep
+/*
+  The function plays a fixed length beep using the built in speaker.
+
+  Input:
+    The frequency of the beep to play.
+  Output:
+    None.
+*/
 void beep(uint32 nFrequence)
 {
 	 play_sound(nFrequence);
@@ -31,6 +53,15 @@ void beep(uint32 nFrequence)
 	 nosound();
 }
 
+/*
+  The function plays the theme of the movie "mission impossible"
+  with beeps:)
+
+  Input:
+    None.
+  Output:
+    None.
+*/
 void play_mission_impossible()
 {
   beep(784);

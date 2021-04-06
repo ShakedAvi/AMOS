@@ -9,7 +9,6 @@
 #include "include/task.h"
 #include "include/gdt.h"
 #include "include/vfs.h"
-#include "include/usermode.h"
 #include "include/chess.h"
 #include "include/syscall.h"
 #include "include/mouse.h"
@@ -17,13 +16,26 @@
 #include "include/interpreter.h"
 #include "include/pci.h"
 #include "include/tar.h"
+#include "include/procFS.h"
 #include "include/graphic.h"
 #include "include/rtc.h"
 
+#define TAR_FS 0
+#define PROC_FS 1
+
+// Jumping to user mode asm function
+extern void jump_usermode();
+
+// The current file system
+int currFS = TAR_FS;
+
+// The initial stack pointer
 uint32 initial_esp;
 
+// Lock for tasks
 static lock_t myLock;
 
+// Tasks' Functions Examples:
 void task_first()
 {
   while (1)
@@ -31,8 +43,6 @@ void task_first()
     acquire(&myLock);
 		print("First!\n");
     release(&myLock);
-
-    //sleep();
 	}
 }
 
@@ -43,9 +53,7 @@ void task_second()
     acquire(&myLock);
 		print("Second!\n");
     release(&myLock);
-
-    //sleep();
-	}
+  }
 }
 
 void task_third()
@@ -55,8 +63,6 @@ void task_third()
     acquire(&myLock);
 		print("Third!\n");
     release(&myLock);
-
-    //sleep();
 	}
 }
 
@@ -67,10 +73,9 @@ void task_fourth()
     acquire(&myLock);
 		print("Fourth!\n");
     release(&myLock);
-
-    //sleep();
 	}
 }
+// End Of Tasks' Examples
 
 void print_menu()
 {
@@ -91,10 +96,6 @@ void print_menu()
 
   int i = 0;
 
-  // Testing Page Fault:
-  //uint32 *ptr = (uint32*)0xA0000000;
-  //uint32 do_page_fault = *ptr;
-
   while(exitFlag)
   {
     for (uint32 k = 0; k < 10; k++)
@@ -113,42 +114,100 @@ void print_menu()
     i++;
     currCommand[i] = 0;
 
-    if (strEql(currCommand, "exit"))
+    if (strEql(currCommand, "exit")) // Exit From The Operating System
     {
       print("\nGoodbye!\n");
       exitFlag = 0;
     }
-    else if (strEql(currCommand, "stop"))
+    else if (strEql(currCommand, "help")) // Help Command
     {
-      __asm__ __volatile__("cli");
-      free_tasks();
+      print("\n\n    Welcome to AMOS - Aviram & Malinsky Operating System\n\n");
+      print("exit                        - Exit From The Operating System\n");
+      print("help                        - Shows This Help Screen\n");
+      print("task                        - Start Multitasking Example\n");
+      print("stop                        - Stop Multitasking Example\n");
+      print("rmt                         - Remove Tasks' Files\n");
+      print("chess                       - Start Chess Example\n");
+      print("clear                       - Clear The Screen\n");
+      print("usermode                    - Start User Mode Example\n");
+      print("run <File Name>             - Start Interpreter (And Run <File Name>)\n");
+      print("graphic                     - Start Graphic Example\n");
+      print("cd tar/proc                 - Switch Between File Systems\n");
+      print("ls                          - Show All Files\n");
+      print("cat <File Name>             - Print The Content of <File Name>\n");
+      print("touch <File Name>           - Create New File (<File Name>)\n");
+      print("rm <File Name>              - Remove a File (<File Name>)\n");
+      print("write <File Name> <Content> - Write <Content> To a File (<File Name>)\n");
+      print("time                        - Print Time and Date From Real Time Clock\n");
+      print("\n\n");
     }
-    else if (strEql(currCommand, "task"))
+    else if (strEql(currCommand, "task")) // Start Multitasking Example
     {
       __asm__ __volatile__("sti");
       init_timer(100);
 
+      file_t newFile1 = {0};
+      strCpy(newFile1.name, "Menu Process");
+      newFile1.flags = 0;
+      procfs_open(&newFile1);
       create_task(0, (void*)print_menu, (char*)initial_esp);
-      //create_task(0, (void*)task_first, (char*)4000);
+
+      file_t newFile2 = {0};
+      strCpy(newFile2.name, "Second Process");
+      newFile2.flags = 0;
+      procfs_open(&newFile2);
       create_task(1, (void*)task_second, (char*)6000);
+
+      file_t newFile3 = {0};
+      strCpy(newFile3.name, "Third Process");
+      newFile3.flags = 0;
+      procfs_open(&newFile3);
       create_task(2, (void*)task_third, (char*)2000);
+
+      file_t newFile4 = {0};
+      strCpy(newFile4.name, "Fourth Process");
+      newFile4.flags = 0;
+      procfs_open(&newFile4);
       create_task(3, (void*)task_fourth, (char*)8000);
     }
-    else if(strEql(currCommand, "chess"))
+    else if (strEql(currCommand, "stop")) // Stop Multitasking Example
+    {
+      __asm__ __volatile__("cli");
+      free_tasks();
+    }
+    else if (strEql(currCommand, "rmt")) // Remove Tasks' Files
+    {
+      file_t newFile1 = {0};
+      strCpy(newFile1.name, "Menu Process");
+      procfs_close(&newFile1);
+
+      file_t newFile2 = {0};
+      strCpy(newFile2.name, "Second Process");
+      procfs_close(&newFile2);
+
+      file_t newFile3 = {0};
+      strCpy(newFile3.name, "Third Process");
+      procfs_close(&newFile3);
+
+      file_t newFile4 = {0};
+      strCpy(newFile4.name, "Fourth Process");
+      procfs_close(&newFile4);
+    }
+    else if(strEql(currCommand, "chess")) // Start Chess Example
     {
       start_game();
     }
-    else if (strEql(currCommand, "clear"))
+    else if (strEql(currCommand, "clear")) // Clear The Screen
     {
       clearScreen();
     }
-    else if (strEql(currCommand, "usermode"))
+    else if (strEql(currCommand, "usermode")) // Start User Mode Example
     {
       __asm__ __volatile__("sti");
       print("\nSwitching to User Mode (and Calling a Syscall):\n");
       jump_usermode();
     }
-    else if (strEql(currCommand, "run"))
+    else if (strEql(currCommand, "run")) // Start Interpreter
     {
       char buffer[512] = { 0 };
       int j = 0;
@@ -159,7 +218,7 @@ void print_menu()
         j++;
       }
       currFileName[j] = 0;
-      file newFile = {0};
+      file_t newFile = {0};
 
       strCpy(newFile.name, currFileName);
 
@@ -167,29 +226,55 @@ void print_menu()
       tar_read(&newFile, buffer, 1);
       run_interpreter(buffer);
     }
-    else if (strEql(currCommand, "graphic"))
+    else if (strEql(currCommand, "graphic")) // Start Graphic Example
     {
       init_mouse();
       print("\nMouse initialized\n\n");
 
-      regs16_t regs;
+      registers16_t regs;
       regs.ax = 0x0013;
       rint32(0x10, &regs);
-
-      //draw_mouse(0, 0, 4);
-      //draw_mouse(320, 200, 4);
-      //clear_graphic();
 
       while (1)
       {
         mouse_handler();
       }
     }
-    else if (strEql(currCommand, "ls"))
+    else if (strEql(currCommand, "cd")) // Switch Between File Systems
     {
-      tar_ls();
+      int j = 0;
+      while(j < 100 && currStr[i] != '\0' && currStr[i] != ' ' && currStr[i] != '\n')
+      {
+        currFileName[j] = currStr[i];
+        i++;
+        j++;
+      }
+      currFileName[j] = 0;
+      if (strEql(currFileName, "tar"))
+      {
+        currFS = TAR_FS;
+      }
+      else if (strEql(currFileName, "proc"))
+      {
+        currFS = PROC_FS;
+      }
+      else
+      {
+          print("\nError! No Valid File System Name!\n");
+      }
     }
-    else if (strEql(currCommand, "cat"))
+    else if (strEql(currCommand, "ls")) // Show All Files
+    {
+      if(currFS == TAR_FS)
+      {
+        tar_ls();
+      }
+      else
+      {
+        procfs_ls();
+      }
+    }
+    else if (strEql(currCommand, "cat")) // Print File's Content
     {
       char buffer[512] = { 0 };
       int j = 0;
@@ -200,17 +285,24 @@ void print_menu()
         j++;
       }
       currFileName[j] = 0;
-      file newFile = {0};
+      file_t newFile = {0};
 
       strCpy(newFile.name, currFileName);
 
-      tar_open(&newFile);
-      tar_read(&newFile, buffer, 1);
-      print("\n");
-      print(buffer);
-      print("\n");
+      if(currFS == TAR_FS)
+      {
+        tar_open(&newFile);
+        tar_read(&newFile, buffer, 1);
+        print("\n");
+        print(buffer);
+        print("\n");
+      }
+      else
+      {
+        print("\nCannot print process files' data without 'ls' command!\n");
+      }
     }
-    else if (strEql(currCommand, "touch"))
+    else if (strEql(currCommand, "touch")) // Create New File
     {
       int j = 0;
       while(j < 100 && currStr[i] != '\0' && currStr[i] != ' ' && currStr[i] != '\n')
@@ -219,13 +311,41 @@ void print_menu()
         i++;
         j++;
       }
-      print("File name: ");
-      print(currFileName);
-      file newFile = {0};
+      file_t newFile = {0};
       strCpy(newFile.name, currFileName);
-      tar_open(&newFile);
+
+      if(currFS == TAR_FS)
+      {
+        tar_open(&newFile);
+      }
+      else
+      {
+        print("\nCannot open process files without 'task' command!\n");
+      }
     }
-    else if (strEql(currCommand, "write"))
+    else if (strEql(currCommand, "rm")) // Remove a File
+    {
+      int j = 0;
+      while(j < 100 && currStr[i] != '\0' && currStr[i] != ' ' && currStr[i] != '\n')
+      {
+        currFileName[j] = currStr[i];
+        i++;
+        j++;
+      }
+      file_t newFile = {0};
+      strCpy(newFile.name, currFileName);
+
+      if(currFS == TAR_FS)
+      {
+        tar_open(&newFile);
+        tar_close(&newFile);
+      }
+      else
+      {
+        print("\nCannot remove process files without 'stop' command!\n");
+      }
+    }
+    else if (strEql(currCommand, "write")) // Write To a New/an Existing File
     {
       int j = 0;
       while(j < 100 && currStr[i] != '\0' && currStr[i] != ' ' && currStr[i] != '\n')
@@ -236,33 +356,32 @@ void print_menu()
       }
       currFileName[j] = 0;
 
-      /*print("\n");
-      print(currFileName);
-      print("\n");*/
-
-      file newFile = {0};
+      file_t newFile = {0};
 
       strCpy(newFile.name, currFileName);
 
-      tar_open(&newFile);
-
-      j = 0;
-      i++;
-      while(j < 100 && currStr[i] != '\0' && currStr[i] != '\n')
+      if(currFS == TAR_FS)
       {
-        currFileName[j] = currStr[i];
+        tar_open(&newFile);
+
+        j = 0;
         i++;
-        j++;
+        while(j < 100 && currStr[i] != '\0' && currStr[i] != '\n')
+        {
+          currFileName[j] = currStr[i];
+          i++;
+          j++;
+        }
+        currFileName[j] = 0;
+
+        tar_write(&newFile, currFileName, 1);
       }
-      currFileName[j] = 0;
-
-      print("Content: \n");
-      print(currFileName);
-      print("\n");
-
-      tar_write(&newFile, currFileName, 1);
+      else
+      {
+        print("\nCannot write to process files!\n");
+      }
     }
-    else if (strEql(currCommand, "time"))
+    else if (strEql(currCommand, "time")) // Print Time and Date From Real Time Clock
     {
       time_t currTime;
       char printMe[20] = { 0 };
@@ -345,18 +464,10 @@ int kmain(struct multiboot *mboot_ptr, uint32 initial_stack)
   diskPort = probe_port(abar);
   print("AHCI Driver initialized\n\n");
 
-  /*char str[512] = { 0 };
-
-  for (int i = 0; i < 512; i++) {
-    str[i] = 'S';
-  }
-
-  disk_access(diskPort, 1, 0, 1, str, WRITE);*/
-
   tar_init();
-
-  //init_keyboard();
-  print("Keyboard initialized\n\n");
+  print("Tar File System initialized\n\n");
+  procfs_init();
+  print("Proc File System initialized\n\n");
 
   init_tasking();
   print("Tasking initialized\n\n");
@@ -364,8 +475,8 @@ int kmain(struct multiboot *mboot_ptr, uint32 initial_stack)
   init_syscalls();
   print("Syscalls initialized\n\n");
 
-  rtc_install();
-  print("Keyboard initialized\n\n");
+  init_rtc();
+  print("Real Time Clock initialized\n\n");
 
   print_menu();
 

@@ -26,7 +26,7 @@ typedef struct page_table
 
 typedef struct page_directory
 {
-    page_table_t *tables[1024];
+    page_table_t* tables[1024];
 
     uint32 tablesPhysical[1024];
 
@@ -34,48 +34,90 @@ typedef struct page_directory
 } page_directory_t;
 
 
-extern page_directory_t *current_directory;
+extern page_directory_t* current_directory;
 
+/*
+  The function sets up the environment, page directories etc and
+  enables paging.
 
-/**
-   Sets up the environment, page directories etc and
-   enables paging.
-**/
-void init_paging(uint32 memorySize);
+  Input:
+    The size of the memory to enable paging for.
+  Output:
+    None.
+*/
+void init_paging(uint32 memory_size);
 
-/**
-   Causes the specified page directory to be loaded into the
-   CR3 register.
-**/
-void switch_page_directory(page_directory_t *new);
+/*
+  The function causes a specified page directory to be loaded into the
+  CR3 register.
 
-/**
-   Retrieves a pointer to the page required.
-   If make == 1, if the page-table in which this page should
-   reside isn't created, create it!
-**/
-page_t *get_page(uint32 address, uint32 make, page_directory_t *dir);
+  Input:
+    The page directory to load.
+  Output:
+    None.
+*/
+void switch_page_directory(page_directory_t* new);
 
-/**
-   Makes a copy of a page directory.
-**/
-page_directory_t *clone_directory(page_directory_t *src);
+/*
+  The function retrieves a pointer to the page required.
+  If make == 1, if the page-table in which this page should
+  reside isn't created, create it
 
+  Input:
+    The address of the page to get, if the caller wants to make it and it's page directory.
+  Output:
+    The required page.
+*/
+page_t* get_page(uint32 address, uint32 make, page_directory_t* dir);
 
-/**
-    Pages memory at a given location
-**/
-void pageMem(uint32 location);
+/*
+  The function makes a copy of a page directory.
 
-/**
-    Maps virtual pages
-**/
+  Input:
+    The page directory to clone.
+  Output:
+    The copy of the given page directory.
+*/
+page_directory_t* clone_directory(page_directory_t* src);
+
+/*
+  The function maps virtual pages.
+
+  Input:
+    The address to start mapping from, the size to map and any page's rw and user parameters.
+  Output:
+    None.
+*/
 void virtual_map_pages(long addr, long size, uint32 rw, uint32 user);
 
-void alloc_frame(page_t *page, int is_kernel, int is_writeable);
+/*
+  The function allocates a new frame to a page.
 
-void free_frame(page_t *page);
+  Input:
+    The page to allocate a new frame to and it's user and rw parameters.
+  Output:
+    None.
+*/
+void alloc_frame(page_t* page, int is_kernel, int is_writeable);
 
-void page_fault(registers_t *regs);
+/*
+  The function frees the frame of a given page.
+
+  Input:
+    The page to free it's frame.
+  Output:
+    None.
+*/
+void free_frame(page_t* page);
+
+/*
+  The function is an handler to page fault exception.
+
+  Input:
+    The registers when the exception occurred.
+  Output:
+    None.
+*/
+void page_fault(registers32_t* regs);
 
 #endif //PAGING_H

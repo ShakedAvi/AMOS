@@ -5,27 +5,55 @@
 #include "types.h"
 #include "kheap.h"
 #include "vfs.h"
+#include "rtc.h"
 
 typedef struct proc
 {
-	char* name;
+	char name[100];
 	int pid;
-	int priority;
-	char* creationDate;
 	int permissions;
-}proc;
+}proc_t;
 
-static proc* currentprocs[5];
+static proc_t* currentprocs[5];
 
-void createproc(char name[5]);
-void deleteproc(int pid);
+/*
+  The function initializes the processes' file system.
 
-void printAllprocs(proc* curr);
-void printProperties(int pid);
+  Input:
+    None.
+  Output:
+    Return code (0 for success).
+*/
+int procfs_init();
 
-static int procfs_init();
-int procfs_open(file *file);
-uint32 procfs_read(file *file, void *buf, uint32 size);
-int procfs_close(file *file);
+/*
+  The function opens a new process file.
+
+  Input:
+    A file with information about the process to open.
+  Output:
+    Return code (0 for success).
+*/
+int procfs_open(file_t *file);
+
+/*
+  The function removes a process file.
+
+  Input:
+    A file with information about the process to close.
+  Output:
+    Return code (0 for success).
+*/
+int procfs_close(file_t *file);
+
+/*
+  The function prints all of the processes files.
+
+  Input:
+    None.
+  Output:
+    None.
+*/
+void procfs_ls();
 
 #endif

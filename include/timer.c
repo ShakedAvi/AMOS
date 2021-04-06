@@ -2,6 +2,14 @@
 
 extern void timer_handler();
 
+/*
+  The function initializes the timer.
+
+  Input:
+    The tick's frequency.
+  Output:
+    None.
+*/
 void init_timer(uint32 frequency)
 {
    register_interrupt_handler(TIMER_IRQ, (interrupt_handler_t)&timer_handler);

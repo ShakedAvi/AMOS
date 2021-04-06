@@ -204,17 +204,4 @@ typedef struct tagFIS_DEV_BITS
 } FIS_DEV_BITS;
 
 
-/*
-	Debug Functions:
-*/
-/*
-void debug_FIS_REG_H2D(FIS_REG_H2D *ptr);
-void debug_FIS_REG_D2H(volatile FIS_REG_D2H *ptr);
-void debug_FIS_DATA(FIS_DATA *ptr);
-void debug_FIS_PIO_SETUP(volatile FIS_PIO_SETUP *ptr);
-void debug_FIS_DMA_SETUP(volatile FIS_DMA_SETUP *ptr);
-*/
-// void init_FIS_TYPE_REG_H2D(FIS_REG_H2D *fis);
-
-
 #endif

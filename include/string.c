@@ -1,13 +1,29 @@
 #include "string.h"
 
-uint16 strLen(string str)
+/*
+  The function returns the length of a string.
+
+  Input:
+    The string to get it's length.
+  Output:
+    The length of the given string.
+*/
+uint16 strLen(char* str)
 {
   uint16 i = 1;
   while(str[i++]);
   return --i;
 }
 
-uint16 strEql(string str1, string str2)
+/*
+  The function checks if two strings are equal.
+
+  Input:
+    The strings to check.
+  Output:
+    If they are equal (0 if they are not).
+*/
+uint16 strEql(char* str1, char* str2)
 {
   uint8 result = 1, i = 0, size = strLen(str1);
 
@@ -28,7 +44,15 @@ uint16 strEql(string str1, string str2)
   return result;
 }
 
-void strCpy(string strDest, string strSrc)
+/*
+  The function copies a string into another one.
+
+  Input:
+    The source and dest strings.
+  Output:
+    None.
+*/
+void strCpy(char* strDest, char* strSrc)
 {
   int i = 0;
   do
@@ -38,47 +62,15 @@ void strCpy(string strDest, string strSrc)
   while(strSrc[++i] != 0);
 }
 
-string strTok(string str, string comp)
-{
-	static int pos;
-	static char *s;
-	int i =0, start = pos;
+/*
+  The function turns a string into integer.
 
-	if(str != 0)
-		s = str;
-
-	i = 0;
-	int j = 0;
-	while(s[pos] != '\0')
-	{
-		j = 0;
-		while(comp[j] != '\0')
-		{
-			if(s[pos] == comp[j])
-			{
-				s[pos] = '\0';
-				pos = pos+1;
-				if(s[start] != '\0')
-					return (&s[start]);
-				else
-				{
-					start = pos;
-					pos--;
-					break;
-				}
-			}
-			j++;
-		}
-		pos++;
-	}
-	s[pos] = '\0';
-	if(s[start] == '\0')
-		return 0;
-	else
-		return &s[start];
-}
-
-int ascii_to_int(string str)
+  Input:
+    The string to turn into integer.
+  Output:
+    The final integer.
+*/
+int ascii_to_int(char* str)
 {
     int res = 0;
 
@@ -88,7 +80,15 @@ int ascii_to_int(string str)
     return res;
 }
 
-void reverse(char str[], int length)
+/*
+  The function reverses a string.
+
+  Input:
+    The string to reverse and it's length.
+  Output:
+    None.
+*/
+void reverse(char* str, int length)
 {
     int start = 0;
     int end = length -1;

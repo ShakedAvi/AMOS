@@ -3,27 +3,91 @@
 
 #include "paging.h"
 
-typedef struct
+typedef struct stack
 {
     int* content;
     int current_size;
     int top;
-} Stack;
+}stack_t;
 
-void init_stack(Stack* stack);
+/*
+  The function initializes a stack.
 
-void destroy(Stack* stack);
+  Input:
+    The stack to initialize.
+  Output:
+    None.
+*/
+void init_stack(stack_t* stack);
 
-void resize(Stack* stack);
+/*
+  The function destroys a stack.
 
-int is_empty(Stack* stack);
+  Input:
+    The stack to destroy.
+  Output:
+    None.
+*/
+void destroy(stack_t* stack);
 
-int is_full(Stack* stack);
+/*
+  The function resizes a stack.
 
-void push(Stack* stack, int data);
+  Input:
+    The stack to resize.
+  Output:
+    None.
+*/
+void resize(stack_t* stack);
 
-int peek(Stack* stack);
+/*
+  The function checks if a stack is empty.
 
-int pop(Stack* stack);
+  Input:
+    The stack to check.
+  Output:
+    If the stack is empty (1 if it is).
+*/
+int is_empty(stack_t* stack);
+
+/*
+  The function checks if a stack is full.
+
+  Input:
+    The stack to check.
+  Output:
+    If the stack is full (1 if it is).
+*/
+int is_full(stack_t* stack);
+
+/*
+  The function pushes a new value to a stack.
+
+  Input:
+    The value to push and the stack to push into.
+  Output:
+    None.
+*/
+void push(stack_t* stack, int data);
+
+/*
+  The function returns the top element of a stack.
+
+  Input:
+    The stack to return it's top element.
+  Output:
+    The top element of the given stack.
+*/
+int peek(stack_t* stack);
+
+/*
+  The function returns the top element of a stack and removes it.
+
+  Input:
+    The stack to pop it's top element.
+  Output:
+    The top element of the given stack.
+*/
+int pop(stack_t* stack);
 
 #endif

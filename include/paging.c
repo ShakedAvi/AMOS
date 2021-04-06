@@ -19,6 +19,14 @@ extern void copy_page_physical(uint32, uint32);
 #define INDEX_FROM_BIT(a) (a/(8*4))
 #define OFFSET_FROM_BIT(a) (a%(8*4))
 
+/*
+  The function sets up a frame.
+
+  Input:
+    The address of the frame to set up.
+  Output:
+    None.
+*/
 static void set_frame(uint32 frame_addr)
 {
   uint32 frame = frame_addr / 0x1000;
@@ -27,6 +35,14 @@ static void set_frame(uint32 frame_addr)
   frames[idx] |= (0x1 << off);
 }
 
+/*
+  The function clears a frame.
+
+  Input:
+    The address of the frame to clear.
+  Output:
+    None.
+*/
 static void clear_frame(uint32 frame_addr)
 {
   uint32 frame = frame_addr/0x1000;
@@ -35,6 +51,14 @@ static void clear_frame(uint32 frame_addr)
   frames[idx] &= ~(0x1 << off);
 }
 
+/*
+  The function tests a frame.
+
+  Input:
+    The address of the frame to test.
+  Output:
+    None.
+*/
 static uint32 test_frame(uint32 frame_addr)
 {
   uint32 frame = frame_addr/0x1000;
@@ -43,6 +67,14 @@ static uint32 test_frame(uint32 frame_addr)
   return (frames[idx] & (0x1 << off));
 }
 
+/*
+  The function finds the first frame in the memory.
+
+  Input:
+    None.
+  Output:
+    The address of the first frame.
+*/
 static uint32 first_frame()
 {
   uint32 i, j;
@@ -54,7 +86,7 @@ static uint32 first_frame()
       for (j = 0; j < 32; j++)
       {
         uint32 toTest = 0x1 << j;
-        if ( !(frames[i]&toTest) )
+        if (!(frames[i] & toTest))
         {
           return i*4*8+j;
         }
@@ -63,7 +95,14 @@ static uint32 first_frame()
   }
 }
 
+/*
+  The function maps virtual pages.
 
+  Input:
+    The address to start mapping from, the size to map and any page's rw and user parameters.
+  Output:
+    None.
+*/
 void virtual_map_pages(long addr, long size, uint32 rw, uint32 user)
 {
   long i = addr;
@@ -85,7 +124,15 @@ void virtual_map_pages(long addr, long size, uint32 rw, uint32 user)
   return;
 }
 
-void alloc_frame(page_t *page, int is_kernel, int is_writeable)
+/*
+  The function allocates a new frame to a page.
+
+  Input:
+    The page to allocate a new frame to and it's user and rw parameters.
+  Output:
+    None.
+*/
+void alloc_frame(page_t* page, int is_kernel, int is_writeable)
 {
   if(page->frame)
   {
@@ -94,9 +141,10 @@ void alloc_frame(page_t *page, int is_kernel, int is_writeable)
   else
   {
     uint32 idx = first_frame();
-    if (idx == (uint32)-1)
+    if (idx == (uint32) - 1)
     {
-      //PANIC! no free frames!!
+      print("\nError! No free frames!\n");
+      return;
     }
     set_frame(idx * 0x1000);
     page->present = 1;
@@ -106,7 +154,15 @@ void alloc_frame(page_t *page, int is_kernel, int is_writeable)
   }
 }
 
-void free_frame(page_t *page)
+/*
+  The function frees the frame of a given page.
+
+  Input:
+    The page to free it's frame.
+  Output:
+    None.
+*/
+void free_frame(page_t* page)
 {
   uint32 frame;
   if (!(frame=page->frame))
@@ -120,28 +176,19 @@ void free_frame(page_t *page)
   }
 }
 
-void pageMem(uint32 location)
-{
-  uint32 j = location;
-  while (j < location + (1024*768*4))
-  {
-    if(j + location + (1024*768*4) < memsize)
-      set_frame(j); // Tell the frame bitmap that this frame is now used!
-    //Get the page
-    page_t *page = get_page(j, 1, kernel_directory);
-    //And fill it
-    page->present = 1;
-    page->rw = 1;
-    page->user = 1;
-    page->frame = j / 0x1000;
-    j += 0x1000;
-  }
-}
+/*
+  The function sets up the environment, page directories etc and
+  enables paging.
 
-void init_paging(uint32 memorySize)
+  Input:
+    The size of the memory to enable paging for.
+  Output:
+    None.
+*/
+void init_paging(uint32 memory_size)
 {
-  uint32 mem_end_page = memorySize;
-  memsize = memorySize;
+  uint32 mem_end_page = memory_size;
+  memsize = memory_size;
 
   nframes = mem_end_page / 0x1000;
   frames = (uint32*)kmalloc(INDEX_FROM_BIT(nframes));
@@ -151,10 +198,6 @@ void init_paging(uint32 memorySize)
   memory_set((uint8*)kernel_directory, 0, sizeof(page_directory_t));
   kernel_directory->physicalAddr = (uint32)kernel_directory->tablesPhysical;
 
-  uint32 vga_mem_addr = 0xFD000000; //replace me with a routine
-
-  pageMem(vga_mem_addr);
-
   uint32 i = 0;
   for(i = KHEAP_START; i < KHEAP_START+KHEAP_INITIAL_SIZE; i += 0x1000)
     get_page(i, 1, kernel_directory);
@@ -163,12 +206,14 @@ void init_paging(uint32 memorySize)
   while (i < placement_address + 0x1000)
   {
     // Kernel code is readable but not writeable from userspace.
-    alloc_frame( get_page(i, 1, kernel_directory), 0, 0);
+    alloc_frame(get_page(i, 1, kernel_directory), 0, 0);
     i += 0x1000;
   }
 
   for(i = KHEAP_START; i < KHEAP_START + KHEAP_INITIAL_SIZE; i += 0x1000)
+  {
     alloc_frame(get_page(i, 1, kernel_directory), 0, 0);
+  }
 
   register_interrupt_handler(14, page_fault);
   // Enable paging.
@@ -182,11 +227,18 @@ void init_paging(uint32 memorySize)
   switch_page_directory(current_directory);
 }
 
-void page_fault(registers_t *regs)
+/*
+  The function is an handler to page fault exception.
+
+  Input:
+    The registers when the exception occurred.
+  Output:
+    None.
+*/
+void page_fault(registers32_t* regs)
 {
   char addr[10] = { 0 };
   asm volatile("sti");
-  //init_timer(1000);
 
   uint32 faulting_address;
   asm volatile("mov %%cr2, %0" : "=r" (faulting_address));
@@ -214,11 +266,22 @@ void page_fault(registers_t *regs)
   if(regs->eip != faulting_address)
   {
     print("Page fault caused by executing unpaged memory\n");
-  }else{
+  }
+  else
+  {
     print("Page fault caused by reading unpaged memory\n");
   }
 }
 
+/*
+  The function causes a specified page directory to be loaded into the
+  CR3 register.
+
+  Input:
+    The page directory to load.
+  Output:
+    None.
+*/
 void switch_page_directory(page_directory_t *dir)
 {
   current_directory = dir;
@@ -229,7 +292,17 @@ void switch_page_directory(page_directory_t *dir)
   asm volatile("mov %0, %%cr0":: "r"(cr0));
 }
 
-page_t* get_page(uint32 address, uint32 make, page_directory_t *dir)
+/*
+  The function retrieves a pointer to the page required.
+  If make == 1, if the page-table in which this page should
+  reside isn't created, create it
+
+  Input:
+    The address of the page to get, if the caller wants to make it and it's page directory.
+  Output:
+    The required page.
+*/
+page_t* get_page(uint32 address, uint32 make, page_directory_t* dir)
 {
   address /= 0x1000;
   uint32 table_idx = address / 1024;
@@ -237,19 +310,30 @@ page_t* get_page(uint32 address, uint32 make, page_directory_t *dir)
   if(dir->tables[table_idx]) // If this table is already assigned
   {
     return &dir->tables[table_idx]->pages[address % 1024];
-  }else if(make)
+  }
+  else if(make)
   {
     uint32 tmp;
     dir->tables[table_idx] = (page_table_t*)kmalloc_ap(sizeof(page_table_t), &tmp);
     memory_set(dir->tables[table_idx], 0, 0x1000);
     dir->tablesPhysical[table_idx] = tmp | 0x7; // PRESENT, RW, US.
     return &dir->tables[table_idx]->pages[address % 1024];
-  }else{
+  }
+  else
+  {
     return 0;
   }
 }
 
-static page_table_t *clone_table(page_table_t *src, uint32 *physAddr)
+/*
+  The function makes a copy of a page table.
+
+  Input:
+    The page table to clone and it's physical address.
+  Output:
+    The copy of the given page table.
+*/
+static page_table_t* clone_table(page_table_t* src, uint32* physAddr)
 {
   page_table_t *table = (page_table_t*)kmalloc_ap(sizeof(page_table_t), physAddr);
   memory_set((uint8*)table, 0, sizeof(page_table_t));
@@ -273,10 +357,18 @@ static page_table_t *clone_table(page_table_t *src, uint32 *physAddr)
   return table;
 }
 
-page_directory_t *clone_directory(page_directory_t *src)
+/*
+  The function makes a copy of a page directory.
+
+  Input:
+    The page directory to clone.
+  Output:
+    The copy of the given page directory.
+*/
+page_directory_t* clone_directory(page_directory_t* src)
 {
   uint32 phys;
-  page_directory_t *dir = (page_directory_t*)kmalloc_ap(sizeof(page_directory_t), &phys);
+  page_directory_t* dir = (page_directory_t*)kmalloc_ap(sizeof(page_directory_t), &phys);
   memory_set((uint8*)dir, 0, sizeof(page_directory_t));
 
   uint32 offset = (uint32)dir->tablesPhysical - (uint32)dir;
