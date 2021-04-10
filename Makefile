@@ -8,7 +8,7 @@ LD = ~/Documents/Cross/Install/bin/i686-elf-ld
 LD_FLAGS = -m elf_i386 -T link.ld -o
 
 QEMU = qemu-system-x86_64
-QEMU_FLAGS = -soundhw pcspk -machine q35 -drive file=disk.img -cdrom
+QEMU_FLAGS = -soundhw pcspk -machine q35 -usb -usbdevice keyboard -drive file=disk.img -cdrom
 
 build:
 	mkdir -p obj
@@ -48,8 +48,9 @@ build:
 	$(CC) include/tar.c -o obj/tar.o $(CFLAGS)
 	$(CC) include/graphic.c -o obj/graphic.o $(CFLAGS)
 	$(CC) include/rtc.c -o obj/rtc.o $(CFLAGS)
+	$(CC) include/uhci.c -o obj/uhci.o $(CFLAGS)
 
-	$(LD) $(LD_FLAGS) AMOS/boot/AMOS.bin kasm.o kc.o obj/isr.o obj/string.o obj/system.o obj/screen.o obj/keyboard.o obj/util.o obj/idt.o obj/paging.o obj/kheap.o obj/timer.o obj/isrAsm.o obj/orderedArray.o obj/task.o obj/gdt.o obj/gdtAsm.o obj/usermode.o obj/pagingAsm.o obj/chess.o obj/procFS.o obj/syscall.o obj/switch.o obj/mouse.o obj/sound.o obj/stack.o obj/interpreter.o obj/pci.o obj/ahci.o obj/disk.o obj/tar.o obj/graphicAsm.o obj/graphic.o obj/rtc.o
+	$(LD) $(LD_FLAGS) AMOS/boot/AMOS.bin kasm.o kc.o obj/isr.o obj/string.o obj/system.o obj/screen.o obj/keyboard.o obj/util.o obj/idt.o obj/paging.o obj/kheap.o obj/timer.o obj/isrAsm.o obj/orderedArray.o obj/task.o obj/gdt.o obj/gdtAsm.o obj/usermode.o obj/pagingAsm.o obj/chess.o obj/procFS.o obj/syscall.o obj/switch.o obj/mouse.o obj/sound.o obj/stack.o obj/interpreter.o obj/pci.o obj/ahci.o obj/disk.o obj/tar.o obj/graphicAsm.o obj/graphic.o obj/rtc.o obj/uhci.o
 
 clear:
 	rm -f AMOS/boot/AMOS.bin
