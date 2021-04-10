@@ -19,6 +19,7 @@
 #include "include/procFS.h"
 #include "include/graphic.h"
 #include "include/rtc.h"
+#include "include/uhci.h"
 
 #define TAR_FS 0
 #define PROC_FS 1
@@ -477,6 +478,30 @@ int kmain(struct multiboot *mboot_ptr, uint32 initial_stack)
 
   init_rtc();
   print("Real Time Clock initialized\n\n");
+
+  uint16 uhci_bar = find_usb_host_controllers();
+  if(reset_uhci_controller(uhci_bar))
+  {
+    print("Successfully Reset The UHCI Controller \n");
+    print("Setting Up The UHCI Controller... \n");
+    setup_uhci_controller(uhci_bar);
+    print("Checking If Root Hub's Ports Are Valid...\n");
+
+    uint8 port = 0x10;
+    while(find_uhci_port(uhci_bar, port))
+    {
+      print("Port Is Valid, Resetting The Port... \n");
+      if (reset_uhci_port(uhci_bar, port))
+      {
+        print("Successfully Reset The Port, Searching For Attached Devices... \n");
+        if (inportw(uhci_bar + port) & 1)
+        {
+          print("Device Found, Recieving Device Descriptor...");
+        }
+      }
+      port += 2;
+    }
+  }
 
   print_menu();
 
