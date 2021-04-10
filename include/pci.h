@@ -71,16 +71,90 @@ typedef union pci_dev
 #define DEVICE_PER_BUS           32
 #define FUNCTION_PER_DEVICE      32
 
+/*
+	Reads from PCI via port 0xCFC (PCI_CONFIG_DATA)
+	Input: PCI Device ( Saved as the Union pci_dev_t, contains data about the device like bus number, device number and function number)
+				 Field: Offset of data to read (Vendor Id, Class Id, Device Id ect.)
+  Output:
+				 Data from PCI
+*/
 uint32 pci_read(pci_dev_t dev, uint32 field);
+
+/*
+    Writes into a PCI Field
+		Input:
+			PCI Device ( Saved as the Union pci_dev_t, contains data about the device like bus number, device number and function number)
+			Field: Offset of data to read (Vendor Id, Class Id, Device Id ect.)
+			Value to write into the PCI Field
+		Output:
+			None
+*/
 void pci_write(pci_dev_t dev, uint32 field, uint32 value);
+
+/*
+    Get device type (i.e, is it a bridge, ide controller ? mouse controller? etc)
+		Input:
+			PCI Device ( Saved as the Union pci_dev_t, contains data about the device like bus number, device number and function number)
+		Output:
+			The Device Type.
+*/
 uint32 get_device_type(pci_dev_t dev);
+
+/*
+		Get secondary bus from a PCI bridge device
+		Input:
+			PCI Device ( Saved as the Union pci_dev_t, contains data about the device like bus number, device number and function number)
+		Output:
+			The Secondary Bus.
+*/
 uint32 get_secondary_bus(pci_dev_t dev);
+
+/*
+    Checks if current device is end point.
+		Input:
+			PCI Device ( Saved as the Union pci_dev_t, contains data about the device like bus number, device number and function number)
+		Output:
+			1 if we reached the end, zero otherwise.
+*/
 uint32 pci_reach_end(pci_dev_t dev);
-pci_dev_t pci_scan_function(uint32 bus, uint32 device, uint32 function);
-pci_dev_t pci_scan_device(uint32 bus, uint32 device);
-pci_dev_t pci_scan_bus(uint32 bus);
-pci_dev_t pci_get_device(uint16 vendor_id, uint16 device_id, int device_type);
+
+/*
+	The following three functions are doing recursion, enumerating each and every device connected to pci
+	We start with the primary bus 0, which has 8 function, each of the function is actually a bus
+	Then, each bus can have 8 devices connected to it, each device can have 8 functions
+	When scanning the function, we can check which device we've found based on it's vendor id and class id.
+*/
+
+// Scan function
+pci_dev_t pci_scan_function(uint32 bus, uint32 device, uint32 function, uint8 class_id, uint8 subclass_id, uint8 prog_if);
+
+// Scan device
+pci_dev_t pci_scan_device(uint32 bus, uint32 device, uint8 class_id, uint8 subclass_id, uint8 prog_if);
+
+// Scan bus
+pci_dev_t pci_scan_bus(uint32 bus, uint8 class_id, uint8 subclass_id, uint8 prog_if);
+
+/*
+    Initializes the PCI, filling size for each field in config space
+		Input: None
+		Output: None
+*/
 void pci_init();
+
+/*
+	Returns the data from the ABAR (AHCI Base Memory Register), the abar contains all AHCI registers and memories.
+	Input:
+		None
+	Output:
+		HBA_MEM* abar: a struct containing the data from the ABAR
+*/
 HBA_MEM* get_abar();
+
+/*
+	Searches for USB Host Controllers in the PCI
+	Input: None
+	Output: None
+*/
+uint16 find_usb_host_controllers();
 
 #endif

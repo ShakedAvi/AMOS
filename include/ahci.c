@@ -1,5 +1,13 @@
 #include "ahci.h"
 
+/*
+	reconfigurates all the necessary AHCI memory spaces
+	Input:
+		HBA_PORT *port: the port in which the SATA Device is connected into
+		int portno: The number of the port (1 -> 32)
+	Output:
+		None
+*/
 void port_rebase(HBA_PORT *port, int portno)
 {
 	stop_cmd(port);	// Stop command engine
@@ -34,7 +42,13 @@ void port_rebase(HBA_PORT *port, int portno)
 	start_cmd(port);	// Start command engine
 }
 
-// Start command engine
+/*
+	Starts the Command Engine
+	Input:
+		HBA_PORT *port: A Pointer to a struct containing all the ports and registers recieved from the ABAR
+	Output:
+		None
+*/
 void start_cmd(HBA_PORT *port)
 {
 	// Wait until CR (bit15) is cleared
@@ -46,7 +60,13 @@ void start_cmd(HBA_PORT *port)
 	port->cmd |= HBA_PXCMD_ST;
 }
 
-// Stop command engine
+/*
+	Stops the Command Engine
+	Input:
+		HBA_PORT *port: A Pointer to a struct containing all the ports and registers recieved from the ABAR
+	Output:
+		None
+*/
 void stop_cmd(HBA_PORT *port)
 {
 	// Clear ST (bit0)
@@ -67,9 +87,16 @@ void stop_cmd(HBA_PORT *port)
 
 }
 
+/*
+	Checks what device is attached to each port
+	Input:
+		HBA_PORT *abar: The AHCI Base Memory Register ( Contains The Registers and Memories of the AHCI Controller)
+	Output:
+		The registers of the port that the SATA Device is connected to, saved as a struct called HBA_PORT
+*/
 HBA_PORT* probe_port(HBA_MEM *abar)
 {
-	// Search disk in implemented ports
+	// Searches for a disk in implemented ports
 	HBA_PORT* sata_port = 0;
 	uint32 pi = abar->pi;
 	int32 port = 0;
@@ -113,7 +140,13 @@ HBA_PORT* probe_port(HBA_MEM *abar)
 	return sata_port;
 }
 
-// Check device type
+/*
+	Checks the type of the device attached to the port
+	Input:
+		HBA_PORT *port: A Pointer to a struct containing all the ports and registers recieved from the ABAR
+	Output:
+		Type of device ( as an int )
+*/
 static int32 check_type(HBA_PORT *port)
 {
 	uint32 ssts = port->ssts;

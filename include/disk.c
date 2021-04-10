@@ -111,7 +111,13 @@ uint8 disk_access(HBA_PORT *port, uint32 startl, uint32 starth, uint32 count, ui
 	return 1;
 }
 
-// Find a free command list slot
+/*
+	Find a free command list slot
+	Input:
+		HBA_PORT *port: The port in which the SATA drive sits on, we read and write through that port
+	Output:
+		The number of the free command list slot
+*/
 int find_cmdslot(HBA_PORT *port)
 {
 	// If not set in SACT and CI, the slot is free
