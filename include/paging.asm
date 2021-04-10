@@ -1,5 +1,5 @@
-[GLOBAL read_eip]
-[GLOBAL copy_page_physical]
+global read_eip
+global copy_page_physical
 
 read_eip:
     pop eax                     ; Get the return address

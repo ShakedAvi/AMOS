@@ -7,12 +7,12 @@ MBOOT_CHECKSUM      equ -(MBOOT_HEADER_MAGIC + MBOOT_HEADER_FLAGS)
 
 ;stack: resb 0x4000
 
-[BITS 32]
+[bits 32]
 
-[GLOBAL mboot]
-[EXTERN code]
-[EXTERN bss]
-[EXTERN end]
+global mboot
+extern code
+extern bss
+extern end
 
 section .__mbHeader
 

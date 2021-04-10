@@ -1,7 +1,7 @@
-[BITS 32]
+[bits 32]
 
-[EXTERN irq_handler]
-[GLOBAL irq_common_stub]
+extern irq_handler
+global irq_common_stub
 
 ; This macro creates a stub for an IRQ - the first parameter is
 ; the IRQ number, the second is the ISR number it is remapped to.
