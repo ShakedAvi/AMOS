@@ -184,6 +184,7 @@ void run_interpreter(char* code_to_run)
 
     programLines[maxLines] = (char*)kmalloc(20 * sizeof(char));
     strCpy(programLines[maxLines], currStr);
+    programLines[maxLines][strLen(currStr)] = 0;
 
     maxLines++;
 
