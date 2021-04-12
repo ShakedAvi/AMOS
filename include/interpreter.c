@@ -116,6 +116,7 @@ int32 parse_command(char* currStr)
     print("\nJumping to: ");
     print(currNum);
     print("\n");
+
     currentLine = ascii_to_int(currNum);
   }
   else if(strEql(currCommand, "print")) // Print the top value of the stack
@@ -144,6 +145,7 @@ int32 parse_command(char* currStr)
   {
     programLines[currentLine] = (char*)kmalloc(strLen(currCommand) * sizeof(char));
     strCpy(programLines[currentLine], currStr);
+    programLines[currentLine][strLen(currStr)] = 0;
     maxLines++;
   }
   currentLine++;

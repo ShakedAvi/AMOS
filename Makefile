@@ -8,7 +8,7 @@ LD = ~/Documents/Cross/Install/bin/i686-elf-ld
 LD_FLAGS = -m elf_i386 -T link.ld -o
 
 QEMU = qemu-system-x86_64
-QEMU_FLAGS = -soundhw pcspk -machine q35 -usb -usbdevice keyboard -drive file=disk.img -cdrom
+QEMU_FLAGS = -soundhw pcspk -machine q35 -usb -drive file=disk.img -cdrom
 
 build:
 	mkdir -p obj

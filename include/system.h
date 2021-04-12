@@ -33,7 +33,7 @@ void outportb(uint16 port, uint8 data);
   Output:
     The read word.
 */
-uint16 inports(uint16 port);
+uint16 inportw(uint16 port);
 
 /*
   The function writes a word to a port.
@@ -43,7 +43,7 @@ uint16 inports(uint16 port);
   Output:
     None.
 */
-void outports(uint16 port, uint16 data);
+void outportw(uint16 port, uint16 data);
 
 /*
   The function reads a double word from a port.

@@ -36,7 +36,7 @@ void outportb(uint16 port, uint8 data)
   Output:
     The read word.
 */
-uint16 inports(uint16 port)
+uint16 inportw(uint16 port)
 {
   uint16 rv;
   __asm__ __volatile__ ("inw %1, %0" : "=a" (rv) : "dN" (port));
@@ -51,7 +51,7 @@ uint16 inports(uint16 port)
   Output:
     None.
 */
-void outports(uint16 port, uint16 data)
+void outportw(uint16 port, uint16 data)
 {
   __asm__ __volatile__ ("outw %1, %0" : : "dN" (port), "a" (data));
 }
