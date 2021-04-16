@@ -104,6 +104,11 @@ void print_menu()
       currCommand[k] = 0;
     }
 
+    for(int k = 0; k < 200; k++)
+    {
+        currStr[k] = 0;
+    }
+
     print("\n>> ");
     readStr(currStr);
     i = 0;
@@ -219,12 +224,17 @@ void print_menu()
         j++;
       }
       currFileName[j] = 0;
-      file_t newFile = {0};
 
-      strCpy(newFile.name, currFileName);
+      if(j > 0)
+      {
+        file_t newFile = {0};
 
-      tar_open(&newFile);
-      tar_read(&newFile, buffer, 1);
+        strCpy(newFile.name, currFileName);
+
+        tar_open(&newFile);
+        tar_read(&newFile, buffer, 1);
+      }
+
       run_interpreter(buffer);
     }
     else if (strEql(currCommand, "graphic")) // Start Graphic Example
